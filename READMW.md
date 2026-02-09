@@ -7,6 +7,10 @@ It uses yt-dlp as the core downloading engine and provides a clean, simple inter
 
 This version requires **FFmpeg** to be installed locally in order to run properly.
 
+## Executable
+
+The executable file is located in the following directory: app/dist
+
 ## Features and Functionality
 
 - Choose the output folder  
