@@ -2,7 +2,7 @@
 
 This project is a graphical video downloader based on **yt-dlp**.  
 It uses yt-dlp as the core downloading engine and provides a clean, simple interface developed with **PySide6**, making it easier to download videos without using the command line.
-
+<br>
 github repository link: https://github.com/yt-dlp/yt-dlp
 
 ## Requirements
