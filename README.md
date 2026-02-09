@@ -3,9 +3,13 @@
 This project is a graphical video downloader based on **yt-dlp**.  
 It uses yt-dlp as the core downloading engine and provides a clean, simple interface developed with **PySide6**, making it easier to download videos without using the command line.
 
+github repository link: https://github.com/yt-dlp/yt-dlp
+
 ## Requirements
 
 This version requires **FFmpeg** to be installed locally in order to run properly.
+Donwload here: https://ffmpeg.org/download.html#build-windows
+***you need to add this into windows PATH, if you use windows***
 
 ## Executable
 
