@@ -6,6 +6,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+core/__init__.py 
+ui/__init__.py 
+
 # ========================
 # Virtual Environment
 # ========================
@@ -26,6 +29,7 @@ temp/
 # ========================
 build/
 dist/
+*.spec
 
 # ========================
 # External tools (large binaries)
