@@ -19,11 +19,12 @@ from PySide6.QtCore import QThread
 
 from core.video_info import VideoInfo
 from core.worker import DownloadWorker
+from core.utils import resource_path
 from ui.widgets import ThumbnailWidget, DownloadProgressBar
 
 
 TEMP_THUMBNAIL = "temp/thumbnail.jpg"
-PLACEHOLDER = "assets/placeholder.png"
+PLACEHOLDER = resource_path("assets/placeholder.png")
 
 
 class MainWindow(QMainWindow):

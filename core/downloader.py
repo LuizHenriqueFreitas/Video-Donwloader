@@ -1,6 +1,6 @@
 # core/downloader.py
 
-from core.utils import resource_path
+from core.utils import get_ffmpeg_path
 
 from yt_dlp import YoutubeDL
 import os
@@ -36,7 +36,7 @@ class Downloader:
         filename: str,
     ):
         
-        ffmpeg_path = resource_path("tools/ffmpeg/bin")
+        ffmpeg_path = get_ffmpeg_path()
 
         if not url:
             raise ValueError("URL vazia")
@@ -55,20 +55,30 @@ class Downloader:
             "outtmpl": output_template,
             "noplaylist": True,
             "progress_hooks": [self._progress_hook],
-            "ffmpeg_locarion": ffmpeg_path,
+            "ffmpeg_location": ffmpeg_path,
         }
 
         # QUALIDADE
         if quality == "Full HD":
-            video_format = "bestvideo[ext=mp4][height<=1080]+bestaudio[ext=mp4]/best[ext=mp4]"
+            video_format = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
         else:
-            video_format = "bestvideo[ext=mp4]+bestaudio[ext=mp4]/best[ext=mp4]"
+            video_format = "bestvideo+bestaudio/best"
 
         # FORMATO
         if format_type == "MP4":
             ydl_opts.update({
                 "format": video_format,
                 "merge_output_format": "mp4",
+                "postprocessors": [
+                {
+                    "key": "FFmpegVideoConvertor",
+                    "preferedformat": "mp4",
+                }],
+                "postprocessor_args": [
+                    "-c:v", "copy",     # copia o vídeo sem re-encode
+                    "-c:a", "aac",      # força áudio AAC
+                    "-b:a", "192k"      # bitrate do áudio
+                ],
             })
 
         elif format_type == "MP3":
