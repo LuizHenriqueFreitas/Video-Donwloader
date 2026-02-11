@@ -1,28 +1,76 @@
-# Video-Downloader
+# Video-Downloader 🎬
 
 This project is a graphical video downloader based on **yt-dlp**.  
 It uses yt-dlp as the core downloading engine and provides a clean, simple interface developed with **PySide6**, making it easier to download videos without using the command line.
-<br>
-github repository link: https://github.com/yt-dlp/yt-dlp
+Official yt-dlp repository: https://github.com/yt-dlp/yt-dlp
 
-## Requirements
+---
 
-This version requires **FFmpeg** to be installed locally in order to run properly.
-Donwload here: https://ffmpeg.org/download.html#build-windows
-***you need to add this into windows PATH, if you use windows***
 
-## Executable
+## 🪛 Resources (for use)
 
-The executable file is located in the following directory: app/dist
+The application is fully self-contained and:
+-  Does NOT require Python installed
+-  Does NOT require FFmpeg installed
+-  Works on any Windows machine
+>*** This version cannot have yt-dlp updated without recompiling. ***
 
-## Features and Functionality
+### for devs
 
-- Choose the output folder  
-- Download videos as **MP4** or extract **audio only (MP3)**  
-- Rename the file before downloading  
+  Check the [Project Structure](#project-structure) section — you will probably need it.
 
-### Limitations
+---
 
-- Download progress feedback (%) is not available yet  
-- Videos are always downloaded in the **highest available quality**  
-- Quality selection is not supported at the moment
+## ⚙️ Executable
+
+The executable file is located in the release pages of this repository as "V2"
+
+---
+
+## 🪁 Features and Functionality
+
+- Select output folder
+- Download videos in **MP4 format (H.264 + AAC)**
+- Support for **Full HD (1080p)** when available
+- Extract audio in **MP3 (192 kbps)**
+- Automatic audio + video merging
+- File renaming before download
+- Download progress indicator (%)
+- Embedded FFmpeg and FFprobe
+- Clean and simple user interface 
+
+---
+
+## 🛠 Built With
+
+- Python
+- PySide6 (Qt for Python)
+- yt-dlp
+- FFmpeg (embedded)
+- PyInstaller
+
+---
+
+## 📦 How It Works
+
+- yt-dlp handles video downloading
+- FFmpeg merges video/audio streams and converts formats
+- PySide6 provides the graphical interface
+- PyInstaller packages everything into a single executable
+
+---
+
+## 📌 Project Structure
+
+>core/ → Download logic and utilities
+>ui/ → Interface files
+>assets/ → Icons and UI resources
+>tools/ → FFmpeg binaries (development only)
+>main.py → Application entry point
+
+---
+
+## 📄 License
+
+This project uses yt-dlp under its respective license.  
+FFmpeg is distributed according to its official license terms.
