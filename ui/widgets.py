@@ -7,7 +7,7 @@ import os
 
 
 class ThumbnailWidget(QWidget):
-    def __init__(self, placeholder_path=None):
+    def __init__(self, placeholder_path="assets/placeholder.png"):
         super().__init__()
 
         self.label = QLabel("Thumbnail")

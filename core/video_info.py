@@ -1,21 +1,32 @@
 # core/video_info.py
 
-from yt_dlp import YoutubeDL
-
+import subprocess
+import json
+from core.utils import get_ytdlp_path
 
 class VideoInfo:
-    def __init__(self):
-        self.ydl_opts = {
-            "quiet": True,
-            "skip_download": True,
-        }
-
     def extract(self, url):
         if not url:
             raise ValueError("URL vazia")
 
-        with YoutubeDL(self.ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
+        ytdlp_path = get_ytdlp_path()
+
+        command = [
+            ytdlp_path,
+            "-j",
+            url
+        ]
+
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode != 0:
+            raise Exception("Erro ao extrair informações")
+
+        info = json.loads(result.stdout)
 
         return {
             "title": info.get("title"),
@@ -23,3 +34,4 @@ class VideoInfo:
             "formats": info.get("formats", []),
             "height": info.get("height"),
         }
+    

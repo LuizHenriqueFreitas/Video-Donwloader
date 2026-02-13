@@ -1,10 +1,10 @@
 # core/downloader.py
 
 from core.utils import get_ffmpeg_path
+from core.utils import get_ffmpeg_path, get_ytdlp_path
 
-from yt_dlp import YoutubeDL
 import os
-
+import subprocess
 
 class Downloader:
     def __init__(self, progress_callback=None):
@@ -37,6 +37,7 @@ class Downloader:
     ):
         
         ffmpeg_path = get_ffmpeg_path()
+        ytdlp_path = get_ytdlp_path()
 
         if not url:
             raise ValueError("URL vazia")
@@ -51,48 +52,55 @@ class Downloader:
         else:
             output_template = os.path.join(output_path, "%(title)s.%(ext)s")
 
-        ydl_opts = {
-            "outtmpl": output_template,
-            "noplaylist": True,
-            "progress_hooks": [self._progress_hook],
-            "ffmpeg_location": ffmpeg_path,
-        }
-
         # QUALIDADE
         if quality == "Full HD":
             video_format = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
         else:
             video_format = "bestvideo+bestaudio/best"
 
+        command = [
+            ytdlp_path,
+            url,
+            "-o", output_template,
+            "--ffmpeg-location", ffmpeg_path,
+            "--no-playlist",
+        ]
+
         # FORMATO
         if format_type == "MP4":
-            ydl_opts.update({
-                "format": video_format,
-                "merge_output_format": "mp4",
-                "postprocessors": [
-                {
-                    "key": "FFmpegVideoConvertor",
-                    "preferedformat": "mp4",
-                }],
-                "postprocessor_args": [
-                    "-c:v", "copy",     # copia o vídeo sem re-encode
-                    "-c:a", "aac",      # força áudio AAC
-                    "-b:a", "192k"      # bitrate do áudio
-                ],
-            })
-
+            command += [
+                "-f", video_format,
+                "--merge-output-format", "mp4",
+                "--postprocessor-args", "ffmpeg:-c:v copy -c:a aac -b:a 192k",
+            ]
         elif format_type == "MP3":
-            ydl_opts.update({
-                "format": "bestaudio",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "mp3",
-                        "preferredquality": "192",
-                    }
-                ],
-            })
-
-        with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            command += [
+                "-f", "bestaudio",
+                "-x",
+                "--audio-format", "mp3",
+                "--audio-quality", "192K",
+            ]
             
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            universal_newlines=True,
+        )
+
+        for line in process.stdout:
+            if "[download]" in line and "%" in line:
+                try:
+                    percent_str = line.split("%")[0].split()[-1]
+                    percent = float(percent_str)
+                    if self.progress_callback:
+                        self.progress_callback(percent)
+                except:
+                    pass
+
+        process.wait()
+
+        if process.returncode != 0:
+            raise Exception("Erro no download com yt-dlp")
+                

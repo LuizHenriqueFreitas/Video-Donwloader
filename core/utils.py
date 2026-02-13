@@ -2,6 +2,12 @@
 import sys
 import os
 
+def get_ytdlp_path():
+    """
+    Retorna caminho absoluto do yt-dlp.exe
+    """
+    return resource_path("bin/yt-dlp.exe")
+
 
 def resource_path(relative_path):
     """

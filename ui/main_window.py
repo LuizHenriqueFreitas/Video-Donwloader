@@ -17,8 +17,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThread
 
+from services.updater import check_and_update
 from core.video_info import VideoInfo
-from core.worker import DownloadWorker
+from ui.workers.download_worker import DownloadWorker
 from core.utils import resource_path
 from ui.widgets import ThumbnailWidget, DownloadProgressBar
 
@@ -39,12 +40,31 @@ class MainWindow(QMainWindow):
 
         self._setup_ui()
 
+    def handle_update_button(self):
+        self.download_button.setEnabled(False)
+
+        success, message = check_and_update()
+
+        QMessageBox.information(self, "Atualização", message)
+
+        self.download_button.setEnabled(True)
+
     def _setup_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
 
         layout = QVBoxLayout()
         central.setLayout(layout)
+
+        top_bar = QHBoxLayout()
+        top_bar.addStretch()
+
+        self.update_button = QPushButton("Atualizar yt-dlp")
+        self.update_button.clicked.connect(self.handle_update_button)
+
+        top_bar.addWidget(self.update_button)
+
+        layout.addLayout(top_bar)
 
         # URL
         layout.addWidget(QLabel("URL do vídeo:"))

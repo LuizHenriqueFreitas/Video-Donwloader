@@ -23,6 +23,9 @@ ui/__init__.py
 # Temporary runtime files
 # ========================
 temp/
+bin/*.backup
+bin/*.new
+
 
 # ========================
 # PyInstaller
