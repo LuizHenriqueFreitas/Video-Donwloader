@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [v 2.5.0] - 2026-
+## 2026-24-07
+
+From this point on, this project will be taken seriously.
+
+Docs folder was addes, as src folder with the source code.
+
+Each file on Docs/ talk about a part of the development, check them for more information.
+
+Next steps, seriously implementation of pytest, code review and refatoration when necessary.
+> **utils.py** and **video_info.py** already were revised and full translated to english (the code).
+
+> These files unity test were built using claude.ai, free plan, and will be revised and translated before next release.
+
+I'm reading now for the  very first time, the pytest and pyside documentation, the is enought AI on this tool. Ai will be used just to accelerate the process.
+
+---
+
+## 2026-12-06
 
 ### Added
 - Outhers social media download suport (instagram, tiktok, X, etc)

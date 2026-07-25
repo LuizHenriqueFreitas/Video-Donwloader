@@ -1,0 +1,72 @@
+Get-Media-Free
+|
+|-> licenses/
+|   |-> dependecies licenses.
+|
+|-> Docs/
+|   |
+|   |-> About.md
+|   |-> Architecture.md
+|   |-> Principles.md
+|   |-> Roadmap.md
+|   |-> Vision.md
+|
+|-> src/
+|   |
+|   |-> core/
+|   |   |-> utils.py
+|   |   |-> video_info.py
+|   |
+|   |-> models/
+|   |   |-> download_item.py
+|   |   
+|   |-> services/
+|   |   |-> downloader_service.py
+|   |   |-> updater.py
+|   |
+|   |-> controllers/
+|   |   |-> download_controller.py
+|   |
+|   |-> storage/
+|   |   |-> history_store.py
+|   |   |-> settings_store.py
+|   |
+|   |-> ui/
+|   |   |-> workers/
+|   |   |   |-> download_worker.py
+|   |   |
+|   |   |-> components/
+|   |   |   |-> clip_trimmer.py
+|   |   |   |-> ranger_slider.py
+|   |   |   |-> download_card.py
+|   |   |   |-> thumbnail_widget.py
+|   |   |
+|   |   |-> download_dialog.py
+|   |   |-> playlist_dialog.py
+|   |   |-> main_window.py
+|   |
+|   |-> assets/
+|   |   |-> program placeholder images be like.
+|   |
+|   |-> data/
+|   |   |-> mantain user data localy, like cookies.
+|   |
+|   |-> tests/
+|   |   |-> automated tests for the software.
+|   |
+|   |-> temp/
+|   |   |-> mantain temporary files, like thumbnails.
+|   |
+|   |-> bin/
+|   |   |-> when developing, yt-dlp.exe stays here for exemple.
+|   |
+|   |-> tools/
+|   |   |-> when developing, ffmpeg.exe and ffmprobe.exe stays here for exemple.
+|   |
+|   |-> main.py
+|
+|-> LICESE
+|-> CONTRIBUTING.md
+|-> CHANGELOG.md
+|-> README.md
+|-> .gitignore
