@@ -8,7 +8,7 @@ Official yt-dlp repository: https://github.com/yt-dlp/yt-dlp
 
 ### If you wanto to contributing with this projetc
 Thank you!   
-Read the CONTRINUTING.md and let's start!
+Read the CONTRIBUTING.md and let's start!
 
 ---
 
@@ -23,13 +23,13 @@ The application is fully self-contained and:
 -  Does NOT require NodeJs installed    
 -  Works on **Windows 11** machine (and probably windows 10)
     ### Maybe it works by code on linux - i develop using mint 22.3 (Zena)
-    0. If you are a **linux user** you can try use this runnig on a development environment, a code IDE like VS code is enough.   
+    1. If you are a **linux user** you can try use this runnig on a development environment, a code IDE like VS code is enough.   
     
-    1. You need to clone this repo to a local folder, so maybe you need git installed on your machine i supose.   
+    2. You need to clone this repo to a local folder, so maybe you need git installed on your machine i supose.   
     
-    2. Also is necessary for linux users on that way, has all the exernal tool installed on yout machine, like ffmpeg, NodeJs, yt-dlp, and Python.   
+    3. Also is necessary for linux users on that way, has all the exernal tool installed on yout machine, like ffmpeg, NodeJs, yt-dlp, and Python.   
     
-    3. You also will need to configure the local develop environment, with all the packages and dependencies these project uses, like pyside6 and others.
+    4. You also will need to configure the local develop environment, with all the packages and dependencies these project uses, like pyside6 and others.
 
 ### ⚠️ Important: Cookies are required for YouTube
 Due to YouTube's restrictions, you **must** provide your browser's cookies to download any video.  
