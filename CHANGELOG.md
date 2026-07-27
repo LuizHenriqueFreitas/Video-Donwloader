@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 2026-27-07
+
+All files are beeing checked and documented in english.<br>
+*(maybe a strange englis because i'm praticing my english while i make this)*
+
+Now i'm reading and understanding all the code, adding usefull comments and really
+document as much as i can, so i think it's good.
+
+Also learning a little about some concepts used on this project, like threading process, 
+pyside and pytest documentation and thinking about some code aproatments.
+
+Next steps:   
+- Learning more about pytest and check, documentate and translate all unit test files (right now all full generateds by free cloud code).   
+- Learning more about pyside and check all ui files.
+- Add a full clear history button.
+- Add more Ux resources like explanations, warning boxes and life quality things.
+
+---
+
 ## 2026-24-07
 
 From this point on, this project will be taken seriously.

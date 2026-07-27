@@ -12,11 +12,12 @@ import json
 import sys
 
 # import some funcions from utils.py
-from core.utils import get_ytdlp_path, get_cookies_path, cookies_exists, get_node_path, is_youtube
+from core.utils import ( get_ytdlp_path, get_cookies_path, cookies_exists, 
+                        get_node_path, is_youtube, YOUTUBE_CLIENT_SETTINGS )
 
 # main class of that file.
 class VideoInfo:
-    # main function of the class, where yt-dlp commandline is created.
+    # JUST TO EXTRACT JSON INFO. where yt-dlp commandline is created. 
     def extract(self, url: str):
         if not url:
             raise ValueError("URL vazia")
@@ -34,10 +35,8 @@ class VideoInfo:
         if is_youtube(url):
             command += [
                 "--user-agent", "Mozilla/5.0",
-                # "youtube:player_client=" is the getter what ytdlp access youtube data;
-                # We are using "web_safari" and fallback "android_vr" because are the best quality ones
-                # for ower cookies browseless pipeline.
-                "--extractor-args", "youtube:player_client=web_safari,android_vr",
+                YOUTUBE_CLIENT_SETTINGS[0],
+                YOUTUBE_CLIENT_SETTINGS[1]
             ]
 
         # beeing a youtube link or not
@@ -85,6 +84,7 @@ class VideoInfo:
     """ ==========================
         FINAL FORMATATION
        ========================== """
+    
     # extract() function formating responde to sent to UI
     def _format_response(self, info: dict):
         formats = info.get("formats", [])
@@ -153,6 +153,7 @@ class VideoInfo:
     """ ==========================
         ERRORS FAST RESPONSE
       ========================== """
+    
     # that need to be translated with location update
     def _parse_error(self, stderr: str) -> str:
         s = stderr.lower()

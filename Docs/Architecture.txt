@@ -1,72 +1,68 @@
 Get-Media-Free
 |
-|-> licenses/
-|   |-> dependecies licenses.
+|-> licenses/                       -> dependecies licenses;
 |
-|-> Docs/
+|-> Docs/                           -> Documentation files;
 |   |
-|   |-> About.md
-|   |-> Architecture.md
-|   |-> Principles.md
-|   |-> Roadmap.md
-|   |-> Vision.md
+|   |-> About.md                    -> About this Software;
+|   |-> Architecture.md             -> Project repository structure and descriptions;
+|   |-> Principles.md               -> Principles of Get Media Free;
+|   |-> Roadmap.md                  -> Next versions checkpoints;
+|   |-> Vision.md                   -> Original vision about how this is supposed to work;
 |
-|-> src/
+|-> src/                            -> Application source code;
 |   |
-|   |-> core/
-|   |   |-> utils.py
-|   |   |-> video_info.py
+|   |-> core/                       -> Core files to app pipeline;
+|   |   |-> utils.py                -> Get_pahts functions, and url validations;
+|   |   |-> video_info.py           -> Extract url informations, videos, youtube 
+|   |                                  playlists and preview for trimm tool;
 |   |
-|   |-> models/
-|   |   |-> download_item.py
+|   |-> models/                     -> Data structures;
+|   |   |-> download_item.py        -> Data structure to download a video;
 |   |   
-|   |-> services/
-|   |   |-> downloader_service.py
-|   |   |-> updater.py
+|   |-> services/                   -> Tecnical resources management;
+|   |   |-> downloader_service.py   -> Manages the queue, threads and download API;
+|   |   |-> updater.py              -> Notifies about new app versions, auto-updates yt-dlp;
 |   |
-|   |-> controllers/
-|   |   |-> download_controller.py
+|   |-> controllers/                -> Controllers of operational tasks.
+|   |   |-> download_controller.py  -> Manage the storage questions, using storage/ scripts.
 |   |
-|   |-> storage/
-|   |   |-> history_store.py
-|   |   |-> settings_store.py
+|   |-> storage/                    -> App files manipulations.
+|   |   |-> history_store.py        -> Load and Save history.json (only this).
+|   |   |-> settings_store.py       -> User preferences, show warnings or just memory limit.
 |   |
 |   |-> ui/
-|   |   |-> workers/
-|   |   |   |-> download_worker.py
+|   |   |-> workers/                -> Runtime processing management.
+|   |   |   |-> download_worker.py  -> Download configuration, with command line construction 
+|   |   |                              for ffmpeg and ytdlp, thareds and clip/ full content 
+|   |   |                              runtime implementation.
 |   |   |
-|   |   |-> components/
+|   |   |-> components/             -> Ui modulary components.
 |   |   |   |-> clip_trimmer.py
 |   |   |   |-> ranger_slider.py
 |   |   |   |-> download_card.py
 |   |   |   |-> thumbnail_widget.py
 |   |   |
-|   |   |-> download_dialog.py
-|   |   |-> playlist_dialog.py
-|   |   |-> main_window.py
+|   |   |-> download_dialog.py      -> Download settings screen.
+|   |   |-> playlist_dialog.py      -> Playlist download settings screen.
+|   |   |-> main_window.py          -> Main window (history) screen.
 |   |
-|   |-> assets/
-|   |   |-> program placeholder images be like.
+|   |-> assets/             -> program placeholder images be like.
 |   |
-|   |-> data/
-|   |   |-> mantain user data localy, like cookies.
+|   |-> data/               -> mantain user data localy, like cookies.
 |   |
-|   |-> tests/
-|   |   |-> automated tests for the software.
+|   |-> tests/              -> automated tests for the software.
 |   |
-|   |-> temp/
-|   |   |-> mantain temporary files, like thumbnails.
+|   |-> temp/               -> mantain temporary files, like thumbnails.
 |   |
-|   |-> bin/
-|   |   |-> when developing, yt-dlp.exe stays here for exemple.
+|   |-> bin/                -> when developing, yt-dlp.exe stays here for exemple.
 |   |
-|   |-> tools/
-|   |   |-> when developing, ffmpeg.exe and ffmprobe.exe stays here for exemple.
+|   |-> tools/              -> when developing, ffmpeg.exe and ffmprobe.exe stays here for exemple.
 |   |
-|   |-> main.py
+|   |-> main.py             -> thats the main file, where the program runs.
 |
-|-> LICESE
-|-> CONTRIBUTING.md
-|-> CHANGELOG.md
-|-> README.md
-|-> .gitignore
+|-> LICESE              -> Get Media Free LICENSE;
+|-> CONTRIBUTING.md     -> How to contribut on this project;
+|-> CHANGELOG.md        -> What changes during development;
+|-> README.md           -> READ to know how to use and what is this.
+|-> .gitignore          -> gitignore file, just that.

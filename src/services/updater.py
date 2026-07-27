@@ -1,4 +1,17 @@
-#services/updater.py
+# services/updater.py
+
+""" Maybe could be a good thing implement unit tests to this file.
+    Also can be a good idea implementa an APP truly auto-updater.
+"""
+
+""" Here in this file you will find just some auto-update resoucers, like:
+    - YT-DLP official repository url;
+    - Get-Media-Free official repository url;
+    - Function to check if there's a new version of Get-Media-Free;
+    - App version validators;
+    - YT-DLP auto updater, downloader and replacer;
+    - YT-DLP version getter to be used on UI;
+"""
 
 import os
 import re
@@ -7,23 +20,38 @@ import shutil
 from core.utils import get_ytdlp_path
 import subprocess
 
-# get yt-dlp last version
+""" This file is resposable to mantain the app version, and the path to check
+    and get new versions of the entair Get-Media-Free binary or just yt-dlp.exe
+"""
+
+
+""" ==================================================
+    GET-MEDIA-FREE VERSION / YT=DLP / GITHUB RELEASE
+  ================================================== """
+
+# url to get yt-dlp last version from official github
 YTDLP_DOWNLOAD_URL = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
 
-# ==========================
-# APP VERSION / GITHUB RELEASE
-# ==========================
-APP_VERSION = "2.5.0" # app actual version
-GITHUB_REPO = "LuizHenriqueFreitas/Free-Video-Downloader"
+# Get Media Free actual version
+APP_VERSION = "2.5.0"
+# app oficial repo 
+GITHUB_REPO = "LuizHenriqueFreitas/Get-Media-Free"
+# github app releases api url
 GITHUB_RELEASES_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 
+""" ============================
+      APP VERSION VALIDATION
+  =========================== """
+
+# normalize release name just to numbers
+# that will just work to x.x.x named releases, other names will not be catch by auto-updater
 def _parse_version(text):
-    """'v2.1.0' -> (2, 1, 0). Ignores non-numeric suffixes."""
+    #'v2.1.0' -> (2, 1, 0). Ignores non-numeric suffixes.
     nums = re.findall(r"\d+", text or "")
     return tuple(int(n) for n in nums[:3]) if nums else ()
 
-
+# check is the newest github release is bigger (numericaly) than current version
 def _is_newer(candidate, current):
     cv, curv = _parse_version(candidate), _parse_version(current)
     if not cv:
@@ -35,12 +63,18 @@ def _is_newer(candidate, current):
     return cv > curv
 
 
-def check_app_update():
-    """
-    Checks the project's latest release on GitHub.
+""" ========================
+        CHECK APP UPDATE
+  ======================== """
+
+""" Checks the project's latest release on GitHub.
     Returns (update_available: bool, latest_version: str|None).
     In case of network or API failure, silently returns (False, None).
-    """
+
+    That code just notifies that a new version avaliable, but doesn't auto update 
+    the entire software yet.
+"""
+def check_app_update():
     try:
         r = requests.get(
             GITHUB_RELEASES_API,
@@ -58,13 +92,19 @@ def check_app_update():
         return (False, None)
 
 
-def download_latest():
+""" =============================
+        YT-DLP FUNCTIONS
+  ========================= """
+
+# as the name says, tha function download the lastest official ytdlp .exe
+def download_latest_ytdlp():
     ytdlp_path = get_ytdlp_path()
     temp_path = ytdlp_path + ".new"
 
     response = requests.get(YTDLP_DOWNLOAD_URL, stream=True, timeout=30)
 
     if response.status_code != 200:
+        # that will need to be transtalet on location update
         raise Exception("Falha ao baixar yt-dlp")
 
     with open(temp_path, "wb") as f:
@@ -74,8 +114,8 @@ def download_latest():
 
     return temp_path
 
-
-def replace_binary(temp_path):
+# this function replaces the old version for the new one
+def replace_binary_ytdlp(temp_path):
     ytdlp_path = get_ytdlp_path()
     backup_path = ytdlp_path + ".backup"
 
@@ -87,16 +127,22 @@ def replace_binary(temp_path):
     if os.path.exists(backup_path):
         os.remove(backup_path)
 
-
-def check_and_update():
+""" This function implements the 2 other functinos above
+    "download_lastest_ytdlp()" and "replace_binary_ytdlp()".
+    Is that function how check and update the yt-dlp binary
+"""
+def check_and_update_ytdlp():
     try:
-        temp_file = download_latest()
-        replace_binary(temp_file)
-        return True, "yt-dlp updated with sucess!"
+        temp_file = download_latest_ytdlp()
+        replace_binary_ytdlp(temp_file)
+        # that will need to be transtalet on location update
+        return True, "yt-dlp atualizado com sucesso!"
     except Exception as e:
-        return False, f"Update Error: {str(e)}"
-    
-def get_installed_version():
+        # that will need to be transtalet on location update
+        return False, f"Error na atualização: {str(e)}"
+
+# that is just a getter, this function get the actual version of ytdlp - probably used on UI
+def get_installed_version_ytdlp():
     try:
         result = subprocess.run(
             [get_ytdlp_path(), "--version"],

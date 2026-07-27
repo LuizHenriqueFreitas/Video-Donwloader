@@ -31,6 +31,18 @@ _PLATFORM_DOMAINS = {
     # if you want to add more lonk normalizations put their here
 }
 
+""" "youtube:player_client=" is the getter what ytdlp access youtube data;
+    We are using "web_safari" and fallback "android_vr" because are the best quality ones
+    for ower cookies browseless pipeline.
+"""
+# this constant will be used to extract UI info and to get the download process
+YOUTUBE_CLIENT_SETTINGS = ["--extractor-args", "youtube:player_client=web_safari,android_vr"]
+
+
+""" ============================
+        URL VERIFICATION
+  =========================== """
+
 # Identify the plataform using current URL. Return 'generic' if unknow.
 # or return a key from _PLATAFORM_DOMAINS dictionary.
 def detect_platform(url: str) -> str:

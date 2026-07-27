@@ -1,5 +1,8 @@
 # models/download_item.py
 
+""" Video data structure - need to be revised
+"""
+
 import uuid, time
 
 class DownloadItem:

@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt, QMetaObject, QObject, QThread, Signal, Q_ARG, Slo
 from controllers.download_controller import DownloadController
 from services.download_service import DownloadService
 from services.updater import (
-    check_and_update, check_app_update, get_installed_version, APP_VERSION,
+    check_and_update, check_app_update, get_installed_version_ytdlp, APP_VERSION,
 )
 
 from ui.components.download_card import DownloadCard
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow):
     # VERSION & UPDATE
     # -------------------------
     def _load_version(self):
-        version = get_installed_version()
+        version = get_installed_version_ytdlp()
         self.version_label.setText(f"yt-dlp: {version}")
 
     def _check_updates(self):
