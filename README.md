@@ -37,7 +37,7 @@ Here's how to do it safely:
 
 1. Install a browser extension like **"Get cookies.txt LOCALLY"** (open source). 
 
-2. Log into YouTube in your browser **(you could use a secoundary accounte)**.
+2. Log into YouTube in your browser **(you could use a secondary accounte)**.
 
 3. Export the cookies to a `cookies.txt` file (choose *Netscape format*).  
 
@@ -67,14 +67,15 @@ But if is just for own use you can run by main.py script on your pc.
 ## 📣 Frequent errors
 
 ### if permission problem
-    Execut the progrom as admin
+Try: Execut the progrom as admin
 
 ### cookies problem
-    1. Certify you impot the correct cookie files.
-    2. try export your cookies again using a browser extension and reimport to app.
+Try:   
+1. Certify you impot the correct cookie files.
+2. try export your cookies again using a browser extension and reimport to app.
 
 ### high quality not avaliable
-    Probably is that a problem of yt-dlp with youtube, will be fix at next version, stay tuyned.
+Probably, that is a problem of yt-dlp with youtube, will be fix at next version, stay tuned.
 
 ---
 

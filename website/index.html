@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Get Media Free - Baixe conteúdo de graça</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+    <!-- HEADER / NAVEGAÇÃO -->
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="#" class="logo-link">
+                    <i class="fas fa-download"></i>
+                    <span>Get Media Free</span>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="#features">Funcionalidades</a>
+                <a href="#videos">Vídeos</a>
+                <a href="#about">Sobre</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO / CHAMADA PRINCIPAL -->
+    <section class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="highlight">Get Media Free</span>
+                    <img src="app-icon.png" alt="Get Media Free Icon" class="app-icon">
+                </h1>
+                <p class="hero-subtitle">
+                    Baixe conteúdo de graça em diversas redes sociais.
+                    <br />
+                    Totalmente local no seu PC
+                    <span class="badge">SEM NENHUMA TELEMETRIA</span>
+                </p>
+                <p class="hero-description">
+                    Faça o download de vídeos músicas em MÁXIMA QUALIDADE das principais
+                    plataformas com um clique. Rápido, seguro e 100% gratuito.
+                </p>
+
+                <!-- ÁREA DE DOWNLOAD -->
+                <div class="download-area">
+                    <div class="download-info">
+                        <span class="download-count">
+                            <i class="fas fa-cloud-download-alt"></i>
+                            <span id="downloadCount">0</span> downloads registrados
+                        </span>
+                        <span class="version-info">
+                            Última versão: <strong id="versionTag">v1.0.0</strong>
+                        </span>
+                    </div>
+                    <a id="downloadBtn" href="#" class="btn btn-download">
+                        <i class="fas fa-windows"></i>
+                        Download para Windows
+                        <span class="btn-badge">Grátis</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ILUSTRAÇÃO / IMAGEM DESTAQUE -->
+            <div class="hero-image">
+                <div class="hero-illustration">
+                    <i class="fas fa-download fa-6x"></i>
+                    <div class="floating-icons">
+                        <a href="https://github.com/LuizHenriqueFreitas/Free-Video-Downloader.git">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://www.youtube.com/@DirtyCode-42">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="https://www.instagram.com/luizbacalhauau/">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO DE FUNCIONALIDADES -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Por que usar o <span class="highlight">Get Media Free</span>?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Privacidade Total</h3>
+                    <p>Todo o processamento é feito localmente no seu computador.
+                        Nenhum dado é enviado para servidores.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Downloads Rápidos</h3>
+                    <p>Baixe múltiplos arquivos simultaneamente com alta velocidade e qualidade
+                        sem limitações.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-globe"></i>
+                    <h3>Suporte a Várias Redes</h3>
+                    <p>Compatível com YouTube, Instagram, Twitter, TikTok, Facebook e muito mais.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-lock"></i>
+                    <h3>100% Gratuito</h3>
+                    <p>Sem assinaturas, sem taxas escondidas. O projeto é open-source e mantido pela comunidade.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-wrench"></i>
+                    <h3>Ferramentas úteis</h3>
+                    <p>Oferece fila de Download. suporte a download de playlsits e uma ferramenta de corte do vídeo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEÇÃO DE VÍDEOS (YOUTUBE) -->
+    <section id="videos" class="videos">
+        <div class="container">
+            <h2 class="section-title">Tutoriais em <span class="highlight">Vídeo</span></h2>
+            <div class="videos-grid">
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <i class="fab fa-youtube"></i>
+                        <span>Assistir</span>
+                    </div>
+                    <h3>Como baixar vídeos do YouTube</h3>
+                    <p>Aprenda a usar o Get Media Free para baixar vídeos em 4k.</p>
+                    <button class="btn btn-video watch-btn" data-video-id="VIDEO_ID_1">
+                        <i class="fab fa-youtube"></i> Assistir no YouTube
+                    </button>
+                </div>
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <i class="fab fa-youtube"></i>
+                        <span>Assistir</span>
+                    </div>
+                    <h3>Baixando Reels e Tiktoks</h3>
+                    <p>Baixe vídeos verticais em alta qualidade em poucos passos.</p>
+                    <button class="btn btn-video watch-btn" data-video-id="VIDEO_ID_2">
+                        <i class="fab fa-youtube"></i> Assistir no YouTube
+                    </button>
+                </div>
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <i class="fab fa-youtube"></i>
+                        <span>Assistir</span>
+                    </div>
+                    <h3>Reportando bugs e Erros</h3>
+                    <p>Meu aplicativo parou de funcionar, o que fazer? Siga o passo a passo.</p>
+                    <button class="btn btn-video watch-btn" data-video-id="VIDEO_ID_3">
+                        <i class="fab fa-youtube"></i> Assistir no YouTube
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL DO VÍDEO -->
+    <div id="videoModal" class="video-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div class="modal-body">
+                <div id="videoPlayerContainer" class="video-player-container">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SEÇÃO SOBRE / DESENVOLVIMENTO -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <h2 class="section-title">Sobre o <span class="highlight">Desenvolvimento</span></h2>
+                <div class="about-grid">
+                    <div class="about-text">
+                        <p>
+                            <i class="fas fa-code"></i>
+                            <strong>Get Media Free</strong> é um projeto open-source desenvolvido com
+                            <strong>Python</strong> e muitas ferramentas da comunidade, como o motor
+                            de download <strong>yt-dlp<strong>.
+                                    Todo o código desenvolvido está disponível no GitHub para contribuições
+                                    e estudo de outros desenvolvedores.
+                        </p>
+                        <p>
+                            <i class="fas fa-users"></i>
+                            Desenvolvido por um estudante de Análise e Desenvolvimento de Sistema como
+                            material de estudo.
+                            Pensado para oferecer uma ferramenta estável, confiável e gratúita a
+                            profissionais da edição de vídeo.
+                        </p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Python</span>
+                            <span class="tech-badge">yt-dlp</span>
+                            <span class="tech-badge">Node.js</span>
+                            <span class="tech-badge">FFmpeg</span>
+                            <span class="tech-badge">Pyside6</span>
+                        </div>
+                        <a href="https://github.com/LuizHenriqueFreitas/Free-Video-Downloader.git"
+                            class="btn btn-github">
+                            <i class="fab fa-github"></i> Ver no GitHub
+                        </a>
+                    </div>
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-star"></i>
+                            <span>1</span>
+                            <p>Estrelas no GitHub</p>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-code-branch"></i>
+                            <span>1</span>
+                            <p>Contribuidores</p>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>...</span>
+                            <p>Última atualização</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RODAPÉ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-download"></i>
+                    <span>Get Media Free</span>
+                </div>
+                <p class="footer-text">
+                    &copy; 2026 Get Media Free - Feito para ser prático e grátis.
+                    <br />
+                    Este projeto é open-source e não tem afiliação com as plataformas
+                    mencionadas.
+                    <br />
+                    email para contato: luiz.h.o.freitas@gmail.com
+                </p>
+                <div class="footer-links">
+                    <a href="https://github.com/LuizHenriqueFreitas/Free-Video-Downloader.git">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@DirtyCode-42">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="https://www.instagram.com/luizbacalhauau/">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

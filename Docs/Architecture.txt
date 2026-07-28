@@ -10,6 +10,12 @@ Get-Media-Free
 |   |-> Roadmap.md                  -> Next versions checkpoints;
 |   |-> Vision.md                   -> Original vision about how this is supposed to work;
 |
+|-> website/                        -> Project website landing page;
+|   |-> index.html
+|   |-> styles.css
+|   |-> script.js
+|   |-> app-icon.png
+|
 |-> src/                            -> Application source code;
 |   |
 |   |-> core/                       -> Core files to app pipeline;
@@ -54,6 +60,8 @@ Get-Media-Free
 |   |-> tests/              -> automated tests for the software.
 |   |
 |   |-> temp/               -> mantain temporary files, like thumbnails.
+|   |
+|   |-> .github/            -> website github pages workflow settings.
 |   |
 |   |-> bin/                -> when developing, yt-dlp.exe stays here for exemple.
 |   |
