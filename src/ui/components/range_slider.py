@@ -1,18 +1,24 @@
 # ui/components/range_slider.py
 
+""" Here you will find:
+    - Slider settings and implementations:
+        - mouse events functions;
+        - draw markers, colors and bar geometry functions;
+        - logic operations about set start and end markers;
+
+"""
+
 from PySide6.QtWidgets import QWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QRectF, QPointF
 from PySide6.QtGui import QPainter, QColor, QBrush, QPen
 
-
+""" Selection slider with two markes (start/ end) of clip limits;
+    The values are integer (seconds);
+    Emit a signal when one or both markers are moved;
+    Also show a optional indicator of player playhed position.
+"""
 class RangeSlider(QWidget):
-    """
-    Slider de faixa com dois marcadores (início e fim) sobre a duração total.
-    Os valores são inteiros (segundos). Emite sinais quando a faixa muda.
-    Também desenha um indicador opcional de posição de reprodução (playhead).
-    """
-
-    rangeChanged = Signal(int, int)   # (start, end)
+    rangeChanged = Signal(int, int)
     startChanged = Signal(int)
     endChanged = Signal(int)
     sliderPressed = Signal()
@@ -26,15 +32,18 @@ class RangeSlider(QWidget):
         self._start = 0
         self._end = 100
         self._playhead = None
-        self._active_handle = None  # "start" | "end" | None
+        self._active_handle = None
 
         self.setMinimumHeight(36)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setMouseTracking(True)
 
-    # ==========================
-    # API
-    # ==========================
+
+    """ ==============
+            APIs
+
+        function names are sufficent to understando what they do
+      ============== """
     def setMaximum(self, maximum: int):
         self._maximum = max(1, int(maximum))
         self._start = 0
@@ -76,9 +85,13 @@ class RangeSlider(QWidget):
         self._playhead = None if value is None else self._clamp(value)
         self.update()
 
-    # ==========================
-    # GEOMETRIA
-    # ==========================
+
+    """ ==================
+            GEOMETRY
+        
+        i don't know how to describe this function
+        over even if it's necessary
+      ================= """
     def _clamp(self, value):
         return max(0, min(self._maximum, int(round(value))))
 
@@ -101,15 +114,16 @@ class RangeSlider(QWidget):
         ratio = (x - track.left()) / track.width()
         return self._clamp(ratio * self._maximum)
 
-    # ==========================
-    # MOUSE
-    # ==========================
+
+    """ =====================
+        MOUSE OPERATIONS
+      ==================== """
     def mousePressEvent(self, event):
         x = event.position().x()
         start_x = self._value_to_x(self._start)
         end_x = self._value_to_x(self._end)
 
-        # escolhe o marcador mais próximo do clique
+        # choose mouse closer marker
         if abs(x - start_x) <= abs(x - end_x):
             self._active_handle = "start"
         else:
@@ -132,21 +146,23 @@ class RangeSlider(QWidget):
         elif self._active_handle == "end":
             self.setEnd(value)
 
-    # ==========================
-    # PAINT
-    # ==========================
+
+    """ ===================
+            PAINT UI    
+      =================== """
+    # painting implementation
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
         track = self._track_rect()
 
-        # groove de fundo
+        # background
         painter.setPen(Qt.NoPen)
         painter.setBrush(QBrush(QColor("#3a3a3a")))
         painter.drawRoundedRect(track, 3, 3)
 
-        # região selecionada
+        # slected region
         start_x = self._value_to_x(self._start)
         end_x = self._value_to_x(self._end)
         sel = QRectF(start_x, track.top(), max(0.0, end_x - start_x), track.height())
@@ -160,10 +176,11 @@ class RangeSlider(QWidget):
             painter.drawLine(QPointF(px, track.top() - 6),
                              QPointF(px, track.bottom() + 6))
 
-        # marcadores
+        # markers
         self._draw_handle(painter, start_x)
         self._draw_handle(painter, end_x)
 
+    # aditional function
     def _draw_handle(self, painter, x):
         cy = self.height() / 2
         r = self.HANDLE_RADIUS

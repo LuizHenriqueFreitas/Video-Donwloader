@@ -1,4 +1,4 @@
-#main.py
+# main.py
 
 import sys
 
@@ -6,13 +6,8 @@ from PySide6.QtWidgets import QApplication
 from ui.main_window import MainWindow
 
 
+# output emojis and UTF-8 configuration
 def _harden_stdio():
-    """
-    Evita que prints de debug com emojis (📥, 🚀, ✅...) derrubem a aplicação
-    em consoles Windows com code page cp1252. Reconfigura stdout/stderr para
-    UTF-8 com 'replace' quando possível; em modo janela (sem console) os
-    streams podem ser None e simplesmente ignoramos.
-    """
     for stream in (sys.stdout, sys.stderr):
         try:
             if stream is not None and hasattr(stream, "reconfigure"):
@@ -26,7 +21,6 @@ def main():
 
     app = QApplication(sys.argv)
 
-    # estilo opcional (dark básico)
     app.setStyle("Fusion")
 
     window = MainWindow()

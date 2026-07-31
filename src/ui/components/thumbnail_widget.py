@@ -1,3 +1,11 @@
+# ui/componets/thumbnail_widget.py
+
+""" Here you will find:
+    - ThumbnailWidget class;
+    - Set thumbnail function;
+    - Set fallback placeholder image;
+"""
+
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import Qt
@@ -20,19 +28,20 @@ class ThumbnailWidget(QWidget):
         layout.addWidget(self.label)
         self.setLayout(layout)
 
-        # carrega placeholder inicial
+        # load initial placeholder
         if placeholder_path:
             self.set_thumbnail(placeholder_path)
 
-    # ==========================
-    # SET THUMBNAIL (SAFE)
-    # ==========================
+
+    """ =====================
+        SAFE SET THUMBNAIL
+      ===================== """
     def set_thumbnail(self, image_path: str):
         if not image_path or not os.path.exists(image_path):
             self._set_placeholder()
             return
 
-        # evita recarregar a mesma imagem
+        # avoid load the same image
         if image_path == self._current_path:
             return
 
@@ -69,5 +78,6 @@ class ThumbnailWidget(QWidget):
                 )
                 return
 
-        # fallback final (sem imagem)
+        # final fallback - without image
+        # that will need to be translated on location update
         self.label.setText("Sem imagem")

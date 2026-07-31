@@ -1,5 +1,17 @@
 # ui/main_window.py
 
+""" WARNING! There's a lot of fucntions not implemented correct
+    That need to be verified soon as possible.
+"""
+
+""" That is the main window file, implement GUI using Pyside6 and QtWidgets frameworks
+
+    Here you will find:
+    - Update_worker class -> probably is a good idea move to another place;
+    - GUI to backend connectors and triggers.
+        - there's a lot of functions, but simplified: GUI integrating backend. 
+"""
+
 import os
 import shutil
 
@@ -13,7 +25,10 @@ from PySide6.QtCore import Qt, QMetaObject, QObject, QThread, Signal, Q_ARG, Slo
 from controllers.download_controller import DownloadController
 from services.download_service import DownloadService
 from services.updater import (
-    check_and_update, check_app_update, get_installed_version_ytdlp, APP_VERSION,
+    check_and_update_ytdlp, 
+    check_app_update, 
+    get_installed_version_ytdlp, 
+    APP_VERSION,
 )
 
 from ui.components.download_card import DownloadCard
@@ -23,26 +38,32 @@ from core.utils import get_cookies_path, cookies_exists, secure_cookies_file
 from storage.settings_store import SettingsStore, ALLOWED_HISTORY_COUNTS
 
 
-# ==========================
-# WORKER: busca atualizações (yt-dlp + release do app no GitHub)
-# ==========================
+
+""" ========================
+    YT-DLP WORKER UPDATER
+    
+    Should be good move this to a separete file
+  ======================= """
+#check yt-dlp version
 class UpdateCheckWorker(QObject):
-    finished = Signal(str, bool, object)  # ytdlp_msg, app_update_disponivel, versao
+    finished = Signal(str, bool, object)
 
     def run(self):
         try:
-            _ok, ytdlp_msg = check_and_update()
+            _ok, ytdlp_msg = check_and_update_ytdlp()
         except Exception as e:
+            # that will need to be translated on location update
             ytdlp_msg = f"Erro ao atualizar yt-dlp: {e}"
         available, latest = check_app_update()
         self.finished.emit(ytdlp_msg, available, latest)
 
 
-# ==========================
-# MAIN WINDOW
-# ==========================
+""" ==================================
+    MAIN WINDOW CLASS IMPLEMENTATION
+  ================================= """
+# main window class
 class MainWindow(QMainWindow):
-    # sinais para atualização da UI a partir das threads de download
+    # UI update signals from download threads
     sig_progress = Signal(str, int)
     sig_finished = Signal(object)
     sig_error = Signal(object, str)
@@ -51,18 +72,21 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Video Downloader")
+        # set window title and size
+        self.setWindowTitle("GET MEDIA FREE")
         self.setMinimumSize(900, 600)
 
+        # instantiate operational classes
         self.controller = DownloadController()
         self.download_service = DownloadService()
         self.settings = SettingsStore()
 
+        # history video cards
         self.cards = {}
-        # itens aguardando cancelamento para depois serem removidos da UI
+        # items waithing cancell process to be removed from UI
         self._pending_removal = set()
 
-        # conecta sinais de download (entregues na thread de UI via QueuedConnection)
+        # connect download signals by QueuedConnection to UI thread
         self.sig_progress.connect(self._on_progress_ui)
         self.sig_finished.connect(self._on_download_finished)
         self.sig_error.connect(self._on_download_error)
@@ -70,23 +94,32 @@ class MainWindow(QMainWindow):
 
         self._setup_ui()
         self._render_history()
-        self._load_version()
+        self._load_ytdlp_version()
         self._update_cookie_ui()
 
-    # -------------------------
-    # FECHAMENTO LIMPO
-    # -------------------------
+
+    """ ========================
+        APP SHUTDOWN PROTOCOL
+      ======================== """
+    # certify close all process correct in case close window
     def closeEvent(self, event):
-        # encerra downloads ativos para não destruir QThreads em execução
+        # end all active downloads correctly and safely
         try:
             self.download_service.shutdown()
         except Exception:
             pass
         super().closeEvent(event)
 
-    # -------------------------
-    # UI
-    # -------------------------
+
+    """ =======================
+          MAIN WINDOW UI
+      ===================== """
+
+    """ All the "Front end" code is on that function,
+        is here where the gadgets were drawned into screen.
+        Obvius using another functinos, but is here where the
+        app layout is defined by code.
+    """
     def _setup_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
@@ -94,25 +127,33 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout()
         central.setLayout(layout)
 
-        # TOP BAR
+        # top bar
         top_bar = QHBoxLayout()
 
-        self.new_button = QPushButton("+ Colar link")
+        """ Below there's all top bar components declaration,
+            like butons and feedback labels.
+        """
+        # new download button
+        self.new_button = QPushButton("+ Colar link") # that will need to be translated on location update
         self.new_button.clicked.connect(self._open_download_dialog)
 
-        self.update_button = QPushButton("Buscar atualizações")
+        # check updates button
+        self.update_button = QPushButton("Buscar atualizações") # that will need to be translated on location update
         self.update_button.clicked.connect(self._check_updates)
 
-        self.import_cookies_btn = QPushButton("Importar cookies")
+        # import cookies button
+        self.import_cookies_btn = QPushButton("Importar cookies") # that will need to be translated on location update
         self.import_cookies_btn.clicked.connect(self._import_cookies)
 
-        self.remove_cookies_btn = QPushButton("Remover cookies")
+        # remove cookies button
+        self.remove_cookies_btn = QPushButton("Remover cookies") # that will need to be translated on location update
         self.remove_cookies_btn.clicked.connect(self._remove_cookies)
 
-        self.cookies_status_label = QLabel("Cookies: ...")
+        # cookies status feedback
+        self.cookies_status_label = QLabel("Cookies: ...") # that will need to be translated on location update
 
-        # seletor de quantidade do histórico
-        self.history_label = QLabel("Histórico:")
+        # history limit selector
+        self.history_label = QLabel("Histórico:") # that will need to be translated on location update
         self.history_count_selector = QComboBox()
         for n in ALLOWED_HISTORY_COUNTS:
             self.history_count_selector.addItem(str(n), n)
@@ -122,9 +163,11 @@ class MainWindow(QMainWindow):
             self.history_count_selector.setCurrentIndex(idx)
         self.history_count_selector.currentIndexChanged.connect(self._on_history_count_changed)
 
+        # yt-dlp version label
         self.version_label = QPushButton("yt-dlp: ...")
         self.version_label.setEnabled(False)
 
+        # adding components into top_bar
         top_bar.addWidget(self.new_button)
         top_bar.addWidget(self.update_button)
         top_bar.addWidget(self.import_cookies_btn)
@@ -135,9 +178,10 @@ class MainWindow(QMainWindow):
         top_bar.addWidget(self.history_count_selector)
         top_bar.addWidget(self.version_label)
 
+        # adding top_bar to layout
         layout.addLayout(top_bar)
 
-        # SCROLL AREA PARA CARDS
+        # scroll area to history cards
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
 
@@ -146,20 +190,29 @@ class MainWindow(QMainWindow):
         self.container.setLayout(self.container_layout)
 
         self.scroll.setWidget(self.container)
+
+        # adding scroll zone to layout
         layout.addWidget(self.scroll)
 
-    # -------------------------
-    # VERSION & UPDATE
-    # -------------------------
-    def _load_version(self):
+
+    """ ===================
+        VERSION & UPDATE
+
+        maybe should be good move this to updater_worker - this file doesn't exist yet
+      =================== """
+    
+    # load actual yt-dlp installed version
+    def _load_ytdlp_version(self):
         version = get_installed_version_ytdlp()
         self.version_label.setText(f"yt-dlp: {version}")
 
+    # check for lastest yt-dlp releases
     def _check_updates(self):
-        # roda em thread para não congelar a UI (download do yt-dlp + API GitHub)
         self.update_button.setEnabled(False)
+        # that will need to be translated on location update
         self.update_button.setText("Buscando...")
 
+        # that process runs in a thread to don't freze the UI
         self._upd_thread = QThread()
         self._upd_worker = UpdateCheckWorker()
         self._upd_worker.moveToThread(self._upd_thread)
@@ -169,13 +222,16 @@ class MainWindow(QMainWindow):
         self._upd_thread.finished.connect(self._upd_thread.deleteLater)
         self._upd_thread.start()
 
+    # return correct message after check update options available - create a UI component
     @Slot(str, bool, object)
     def _on_updates_checked(self, ytdlp_msg, app_update_available, latest_version):
         self.update_button.setEnabled(True)
+        # that will need to be translated on location update
         self.update_button.setText("Buscar atualizações")
-        self._load_version()
+        self._load_ytdlp_version()
 
         if app_update_available and latest_version:
+            # that will need to be translated on location update
             self._safe_message(
                 "Atualização disponível",
                 f"Nova versão ({latest_version}) disponível para download. "
@@ -183,24 +239,28 @@ class MainWindow(QMainWindow):
                 f"yt-dlp: {ytdlp_msg}",
             )
         else:
+            # that will need to be translated on location update
             self._safe_message(
                 "Atualizações",
                 f"yt-dlp: {ytdlp_msg}\n\n"
                 f"O app já está na versão mais recente (v{APP_VERSION}).",
             )
 
-    # -------------------------
-    # HISTORY
-    # -------------------------
+
+    """ ====================
+            HISTORY
+      ================== """
+
+    # runs where has a history limit change
     def _on_history_count_changed(self):
         count = self.history_count_selector.currentData()
         if count in ALLOWED_HISTORY_COUNTS:
             self.settings.set_history_count(count)
             self._render_history()
 
+    # draw history items
     def _render_history(self):
-        """(Re)desenha a lista de cards respeitando a quantidade escolhida."""
-        # limpa cards atuais
+        # clean list
         while self.container_layout.count():
             child = self.container_layout.takeAt(0)
             widget = child.widget()
@@ -210,24 +270,31 @@ class MainWindow(QMainWindow):
 
         count = self.settings.get_history_count()
         items = self.controller.get_history()[:count]
-        # do mais antigo para o mais recente, pois insertWidget(0) inverte
+        # from older to yunger because insertWidget(0) will inverte order
         for item in reversed(items):
             self._add_card(item, start_download=False)
 
-    # -------------------------
-    # COOKIES
-    # -------------------------
+
+    """ ====================
+        COOKIES FEEDBACK
+      =================== """
+
+    # update UI cookies visual feedback
     def _update_cookie_ui(self):
         if cookies_exists():
+            # that will need to be translated on location update
             self.cookies_status_label.setText("Cookies: OK")
             self.cookies_status_label.setStyleSheet("color: #4CAF50;")
             self.remove_cookies_btn.setEnabled(True)
         else:
+            # that will need to be translated on location update
             self.cookies_status_label.setText("Cookies: NÃO CONFIGURADO")
             self.cookies_status_label.setStyleSheet("color: #F44336;")
             self.remove_cookies_btn.setEnabled(False)
 
+    # import cookies function
     def _import_cookies(self):
+        # that will need to be translated on location update
         file, _ = QFileDialog.getOpenFileName(
             self,
             "Selecionar cookies.txt",
@@ -240,45 +307,59 @@ class MainWindow(QMainWindow):
         try:
             os.makedirs("data", exist_ok=True)
             shutil.copy(file, get_cookies_path())
-            secure_cookies_file(get_cookies_path())   # aplica permissões
+            # apply permissions
+            secure_cookies_file(get_cookies_path())
+            # that will need to be translated on location update
             self._safe_message("Sucesso", "Cookies importados com segurança!")
             self._update_cookie_ui()
         except Exception as e:
             self._safe_error("Erro", str(e))
 
+    # remove cookies function
     def _remove_cookies(self):
         try:
             path = get_cookies_path()
             if os.path.exists(path):
                 os.remove(path)
+                # that will need to be translated on location update
                 self._safe_message("Removido", "Cookies removidos.")
             else:
+                # that will need to be translated on location update
                 self._safe_message("Info", "Nenhum cookie encontrado.")
             self._update_cookie_ui()
         except Exception as e:
             self._safe_error("Erro", str(e))
 
-    # -------------------------
-    # CARDS
-    # -------------------------
+
+    """ =================
+        HISTORY CARDS
+      ================ """
+
+    # add history cards to UI
     def _add_card(self, item, start_download=True):
         card = DownloadCard(item)
         self.cards[item.id] = card
         self.container_layout.insertWidget(0, card)
 
-        # botões sempre disponíveis no card
+        # buttons available on all cards
         card.on_copy = lambda _i=item: self._copy_link(_i)
         card.on_retry = lambda _i=item, _c=card: self._retry_download(_i, _c)
         card.on_remove = lambda _i=item, _c=card: self._remove_from_history(_i, _c)
 
+        # call the start_download UI feedback by default
         if start_download:
             self._start_download(item, card)
 
-    # -------------------------
-    # DOWNLOAD DIALOG
-    # -------------------------
+
+    """ =====================
+        DOWNLOAD DIALOG
+      ==================== """
+    
+    # call download_dialog class
     def _open_download_dialog(self):
+        # block if hasn't cookie file
         if not cookies_exists():
+            # that need to be translated on location update
             self._safe_error(
                 "Cookies necessários",
                 "Você precisa importar o arquivo cookies.txt antes de baixar vídeos."
@@ -287,30 +368,38 @@ class MainWindow(QMainWindow):
 
         dialog = DownloadDialog(self)
         if dialog.exec():
-            # pode retornar 1 item (vídeo único) ou N (playlist do YouTube)
+            # can return 1 item or N (in case is a youtube playlist)
             for item in dialog.get_results():
                 self.controller.add_item(item)
                 self._add_card(item, start_download=True)
 
-    # -------------------------
-    # COPIAR LINK / TENTAR NOVAMENTE
-    # -------------------------
+
+    """ =======================
+        COPY LINK / TRY AGAIN
+      ====================== """
+
+    # copy original video link UI button function
     def _copy_link(self, item):
         url = getattr(item, "url", "") or ""
         if url:
             QApplication.clipboard().setText(url)
 
+    # if was ocurred error or cancelled, is that the retry UI button function
     def _retry_download(self, item, card):
         item.status = "pending"
         item.file_path = None
         self._start_download(item, card)
         self.controller.update_item(item)
 
+    # function to UI remove from story button
     def _remove_from_history(self, item, card):
+        # show remove warning
         if not self.settings.get_skip_remove_confirm():
             box = QMessageBox(self)
+            # that need to be translated on location update
             box.setWindowTitle("Remover do histórico")
             box.setIcon(QMessageBox.Question)
+            # that need to be translated on location update
             box.setText(
                 f'Remover "{item.original_title}" da lista?\n\n'
                 f'(O arquivo já baixado NÃO será apagado do disco.)'
@@ -319,6 +408,7 @@ class MainWindow(QMainWindow):
             box.setDefaultButton(QMessageBox.No)
 
             from PySide6.QtWidgets import QCheckBox
+            # that need to be translated on location update
             dont_ask = QCheckBox("Não exibir este aviso novamente")
             box.setCheckBox(dont_ask)
 
@@ -326,32 +416,33 @@ class MainWindow(QMainWindow):
             if dont_ask.isChecked():
                 self.settings.set_skip_remove_confirm(True)
             if reply != QMessageBox.Yes:
-                return
+                return 
 
-        # Verifica se está ativo (baixando ou na fila)
+        # check if is active on queue or downloading
         is_active = (
             item.id in self.download_service.workers or
             any(d["item"].id == item.id for d in self.download_service.queue)
         )
 
         if is_active:
-            # Marca para remoção após o cancelamento ser confirmado pelo sinal
+            # set remotion to after emit cancell signal 
             self._pending_removal.add(item.id)
             self.download_service.cancel_download(item.id)
-            # O card será removido em _on_download_cancelled quando o sinal chegar
+            # the ui card will be removed by _on_download_cancelled function when signal arrives
         else:
-            # Download já terminou (completed/error/cancelled): remove imediatamente
+            # if the download is not finished (complete/error/cancelled): remove imediatly
             self.controller.remove_item(item)
             self.cards.pop(item.id, None)
             self.container_layout.removeWidget(card)
-            card.deleteLater()
+            card.deleteLater() # problem here - deleteLater is no implemented
 
-    # -------------------------
-    # START DOWNLOAD (FILA ÚNICA, MÁX 3)
-    # -------------------------
+
+    """ ===========================
+        STAR DOWNLOAD UNIQUE QUEUE
+      ========================== """
     def _start_download(self, item, card):
-        # entra na fila; o card vira "downloading" no primeiro progresso real
-        card.update_status("queued")
+        # etry queue - card status "downloading" when really start download (beacause maybe need to wait other downloads)
+        card.update_status("queued") # problem here - update_status is no implemented
 
         self.download_service.start_download(
             item,
@@ -361,26 +452,30 @@ class MainWindow(QMainWindow):
             on_cancel=lambda i: self.sig_cancelled.emit(i),
         )
 
-        # cancelamento
-        card.on_cancel = lambda: self.download_service.cancel_download(item.id)
+        # cacelling download
+        card.on_cancel = lambda: self.download_service.cancel_download(item.id) # problem here - on_cancel is no implemented
 
-    # -------------------------
-    # CALLBACKS (SLOTS NA THREAD DE UI)
-    # -------------------------
+
+    """ ===============================
+        CALLBACKS OF UI THREAD SLOTS
+      ============================== """
+    # creat ui componet of download loading bar
     @Slot(str, int)
     def _on_progress_ui(self, item_id, percent):
         card = self.cards.get(item_id)
         if not card:
             return
-        card.mark_downloading()   # garante a barra visível (idempotente)
+        card.mark_downloading()
         card.update_progress(percent)
 
+    # set donwload finished to UI feedback
     def _on_download_finished(self, item):
         card = self.cards.get(item.id)
         if card:
             card.update_status("completed")
         self.controller.update_item(item)
 
+    # set download error to UI feedback
     def _on_download_error(self, item, msg):
         card = self.cards.get(item.id)
         if card:
@@ -388,9 +483,10 @@ class MainWindow(QMainWindow):
         self.controller.update_item(item)
         self._safe_error("Erro", msg)
 
+    # set download cancelled to UI feedback
     def _on_download_cancelled(self, item):
         if item.id in self._pending_removal:
-            # Remoção solicitada pelo usuário: apaga card e histórico agora
+            # when was cancelled faster tha ui - remove card and history relacionated data
             self._pending_removal.discard(item.id)
             card = self.cards.pop(item.id, None)
             self.controller.remove_item(item)
@@ -398,15 +494,18 @@ class MainWindow(QMainWindow):
                 self.container_layout.removeWidget(card)
                 card.deleteLater()
         else:
-            # Cancelamento normal (botão Cancelar do card)
+            # canceled by ui cancell button
             card = self.cards.get(item.id)
             if card:
                 card.update_status("cancelled")
             self.controller.update_item(item)
 
-    # -------------------------
-    # SAFE UI
-    # -------------------------
+
+    """ =====================
+        SAFER UI FALLBACKS
+      ==================== """
+    
+    # template friendly message text box
     def _safe_message(self, title, msg):
         if QThread.currentThread() == self.thread():
             QMessageBox.information(self, title, msg)
@@ -417,6 +516,7 @@ class MainWindow(QMainWindow):
                                     Q_ARG(str, msg),
                                     Q_ARG(int, QMessageBox.Information))
 
+    # template friendly error text box
     def _safe_error(self, title, msg):
         if QThread.currentThread() == self.thread():
             QMessageBox.critical(self, title, msg)
@@ -427,6 +527,7 @@ class MainWindow(QMainWindow):
                                     Q_ARG(str, msg),
                                     Q_ARG(int, QMessageBox.Critical))
 
+    # set UI text box component
     @Slot(str, str, int)
     def _show_message_box(self, title, msg, icon):
         box = QMessageBox(self)

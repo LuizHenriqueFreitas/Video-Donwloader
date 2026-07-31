@@ -6,7 +6,8 @@
     - Start_Download() public api;
     - Download handlers by erros;
     - Download Security implementation to correct close process in case of 
-      crash, close app or just cancel a download.
+      crash, close app or just cancel a download;
+    - get api worker queue data.
 """
 
 from collections import deque
@@ -225,6 +226,18 @@ class DownloadService:
                 thread.wait(timeout_ms)
             except Exception:
                 pass
+
+
+    """ =============================
+        STATUS QUERY (THAREAD-SAFE)
+      ============================ """
+    # api to secure main_window acess to workers/queue
+    def is_active(self, item_id):
+        with self._lock:
+            # return true if the item is runnig now or waiting on the queue
+            if item_id in self.workers:
+                return True
+            return any(data["item"].id == item_id for data in self.queue)
 
 
     """ ==========================
