@@ -34,7 +34,7 @@ from services.updater import (
 from ui.components.download_card import DownloadCard
 from ui.download_dialog import DownloadDialog
 
-from core.utils import get_cookies_path, cookies_exists, secure_cookies_file
+from core.utils import get_cookies_path, cookies_exists, secure_cookies_file, clear_temp_dir
 from storage.settings_store import SettingsStore, ALLOWED_HISTORY_COUNTS
 
 
@@ -96,6 +96,13 @@ class MainWindow(QMainWindow):
         self._render_history()
         self._load_ytdlp_version()
         self._update_cookie_ui()
+
+        # safety net: wipe leftover temp thumbnails from a previous run
+        # (crash, force-quit, dialog closed in an unexpected way)
+        try:
+            clear_temp_dir()
+        except Exception:
+            pass
 
 
     """ ========================
@@ -163,6 +170,10 @@ class MainWindow(QMainWindow):
             self.history_count_selector.setCurrentIndex(idx)
         self.history_count_selector.currentIndexChanged.connect(self._on_history_count_changed)
 
+        # clear all history button
+        self.clear_history_btn = QPushButton("Limpar histórico") # that will need to be translated on location update
+        self.clear_history_btn.clicked.connect(self._clear_history)
+
         # yt-dlp version label
         self.version_label = QPushButton("yt-dlp: ...")
         self.version_label.setEnabled(False)
@@ -172,6 +183,7 @@ class MainWindow(QMainWindow):
         top_bar.addWidget(self.update_button)
         top_bar.addWidget(self.import_cookies_btn)
         top_bar.addWidget(self.remove_cookies_btn)
+        top_bar.addWidget(self.clear_history_btn)
         top_bar.addWidget(self.cookies_status_label)
         top_bar.addStretch()
         top_bar.addWidget(self.history_label)
@@ -258,6 +270,26 @@ class MainWindow(QMainWindow):
             self.settings.set_history_count(count)
             self._render_history()
 
+    # ask confirmation and wipe the entire download history
+    def _clear_history(self):
+        box = QMessageBox(self)
+        # that need to be translated on location update
+        box.setWindowTitle("Limpar histórico")
+        box.setIcon(QMessageBox.Question)
+        box.setText(
+            "Todo o histórico de downloads será apagado, mas os vídeos "
+            "continuam em seu computador, se quiser deletá-los faça manualmente."
+        )
+        box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        box.setDefaultButton(QMessageBox.Cancel)
+
+        reply = box.exec()
+        if reply != QMessageBox.Ok:
+            return
+
+        self.controller.clear_history()
+        self._render_history()
+
     # draw history items
     def _render_history(self):
         # clean list
@@ -305,7 +337,6 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            os.makedirs("data", exist_ok=True)
             shutil.copy(file, get_cookies_path())
             # apply permissions
             secure_cookies_file(get_cookies_path())
@@ -419,10 +450,7 @@ class MainWindow(QMainWindow):
                 return 
 
         # check if is active on queue or downloading
-        is_active = (
-            item.id in self.download_service.workers or
-            any(d["item"].id == item.id for d in self.download_service.queue)
-        )
+        is_active = self.download_service.is_active(item.id)
 
         if is_active:
             # set remotion to after emit cancell signal 
@@ -434,7 +462,7 @@ class MainWindow(QMainWindow):
             self.controller.remove_item(item)
             self.cards.pop(item.id, None)
             self.container_layout.removeWidget(card)
-            card.deleteLater() # problem here - deleteLater is no implemented
+            card.deleteLater()
 
 
     """ ===========================
@@ -442,7 +470,7 @@ class MainWindow(QMainWindow):
       ========================== """
     def _start_download(self, item, card):
         # etry queue - card status "downloading" when really start download (beacause maybe need to wait other downloads)
-        card.update_status("queued") # problem here - update_status is no implemented
+        card.update_status("queued")
 
         self.download_service.start_download(
             item,
@@ -453,8 +481,8 @@ class MainWindow(QMainWindow):
         )
 
         # cacelling download
-        card.on_cancel = lambda: self.download_service.cancel_download(item.id) # problem here - on_cancel is no implemented
-
+        card.on_cancel = lambda: self.download_service.cancel_download(item.id)
+        
 
     """ ===============================
         CALLBACKS OF UI THREAD SLOTS

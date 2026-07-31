@@ -343,9 +343,9 @@ class DownloadWorker(QObject):
         # get node
         node_path = get_node_path()
         if node_path and os.path.exists(node_path):
-            command += ["--js-runtime", f"node:{node_path}"]
+            command += ["--js-runtimes", f"node:{node_path}"]
         else:
-            command += ["--js-runtime", "node"]
+            command += ["--js-runtimes", "node"]
 
         # if is the case, set overwrite file mode
         if getattr(self.item, "overwrite", False) and not for_clip:

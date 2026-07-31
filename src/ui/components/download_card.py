@@ -348,16 +348,8 @@ class DownloadCard(QWidget):
         self._terminal_view = status in ("completed", "error", "cancelled")
         self._apply_status()
 
-    """ REVISE THIS, THAT DOENS'T SHOULD EXIST
-    """
+    # sincronize UI and thread process status in real time
     def mark_downloading(self):
-        """
-        Chamado a cada progresso recebido. Garante que o visual de download
-        (barra de progresso) esteja visível — necessário porque o worker já
-        setou item.status='downloading' no objeto compartilhado, então o
-        _apply_status não era reaplicado e o card ficava preso em 'Na fila...'.
-        Não reverte estados finais.
-        """
         if self._terminal_view:
             return
         if self.item.status != "downloading" or not self.progress_container.isVisibleTo(self):

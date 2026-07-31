@@ -87,7 +87,7 @@ class FakeWorker:
     def moveToThread(self, thread):
         self.moveToThread_called_with = thread
 
-    def run(self):
+    def run_download(self):
         self.run_called = True
         if self._run_behavior:
             self._run_behavior(self)

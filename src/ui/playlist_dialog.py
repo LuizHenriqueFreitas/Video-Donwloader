@@ -24,7 +24,6 @@
     - playlist confirm download;
 """
 
-import os
 import requests
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
@@ -34,11 +33,11 @@ from PySide6.QtCore import Qt, QThread, QObject, Signal, QSize
 from PySide6.QtGui import QPixmap
 
 from src.models.download_item import DownloadItem
-from src.core.utils import resolve_unique_title, safe_filename
+from src.core.utils import resolve_unique_title
 from src.storage.settings_store import SettingsStore
 
 
-# i need to revise what is that and what that do
+# calculate video duration to show in UI
 def _fmt_duration(seconds):
     if not seconds:
         return ""

@@ -103,7 +103,7 @@ class TestExtract:
 
         cmd = captured["command"]
         assert cmd[0] == "/fake/yt-dlp"
-        assert "--js-runtime" in cmd
+        assert "--js-runtimes" in cmd
         assert "/fake/node" in cmd
         assert "--no-playlist" in cmd
         assert "--skip-download" in cmd

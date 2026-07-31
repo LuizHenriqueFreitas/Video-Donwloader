@@ -191,14 +191,14 @@ class TestBuildDownloadCommand:
     def test_node_path_exists_uses_node_prefix(self, patched_utils):
         worker = make_worker()
         cmd = worker._build_download_command()
-        idx = cmd.index("--js-runtime")
+        idx = cmd.index("--js-runtimes")
         assert cmd[idx + 1] == f"node:{patched_utils['node_file']}"
 
     def test_node_path_missing_falls_back_to_bare_node(self, patched_utils, monkeypatch):
         monkeypatch.setattr(dw, "get_node_path", lambda: "/nonexistent/node/path/xyz")
         worker = make_worker()
         cmd = worker._build_download_command()
-        idx = cmd.index("--js-runtime")
+        idx = cmd.index("--js-runtimes")
         assert cmd[idx + 1] == "node"
 
     def test_overwrite_adds_force_flag_for_full_download(self, patched_utils):

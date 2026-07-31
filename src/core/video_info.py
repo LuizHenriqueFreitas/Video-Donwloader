@@ -41,7 +41,7 @@ class VideoInfo:
 
         # beeing a youtube link or not
         command += [
-            "--js-runtime", node_path, # js-runtime is required at youtube bot detection
+            "--js-runtimes", f"node:{node_path}", # js-runtime is required at youtube bot detection
             "--no-playlist",
             "--skip-download",
             "-j",

@@ -62,7 +62,7 @@ from core.utils import (
     resource_path, cookies_exists, looks_like_url, is_youtube,
     is_youtube_playlist,
     file_conflict, resolve_unique_title, expected_output_path,
-    safe_filename, invalid_filename_chars, is_valid_filename,
+    safe_filename, invalid_filename_chars, is_valid_filename, get_temp_dir
 )
 from ui.components.thumbnail_widget import ThumbnailWidget
 from models.download_item import DownloadItem
@@ -133,7 +133,6 @@ class VideoInfoWorker(QObject):
             thumb_path = None
 
             if thumb_url:
-                os.makedirs("temp", exist_ok=True)
                 r = requests.get(thumb_url, timeout=10)
                 thumb_path = self.temp_path
                 with open(thumb_path, "wb") as f:
@@ -257,7 +256,7 @@ class DownloadDialog(QDialog):
         self.filename_input.textChanged.connect(self._validate_filename_live)
         layout.addWidget(self.filename_input)
 
-        # revise what is that
+        # is that just a visual feedback to warning wrong file names
         self.filename_warning = QLabel("")
         self.filename_warning.setStyleSheet("color: #F44336; font-size: 11px;")
         self.filename_warning.hide()
@@ -442,8 +441,12 @@ class DownloadDialog(QDialog):
             self._start_playlist_worker(url, request_id)
             return
 
+        # delete previous thumbnail (if any) before requesting a new one,
+        # otherwise every pasted URL leaves an orphaned .jpg behind
+        self._delete_current_thumb()
+
         # unique video runtime
-        temp_thumb = os.path.join("temp", f"{request_id}.jpg")
+        temp_thumb = os.path.join(get_temp_dir(), f"{request_id}.jpg")
         self._current_thumb_path = temp_thumb
 
         # that will need to be translated at location update
@@ -778,9 +781,9 @@ class DownloadDialog(QDialog):
     def get_results(self):
         return self._results
 
-    # i don't know what that do - i'll check before translate the documentation comment
+    # basicaly same thing of get_results - mantained just to avoid broke some old code
+    # should be replaced and deleted someday
     def get_result(self):
-        """Compatibilidade: primeiro item (ou None)."""
         return self._results[0] if self._results else None
 
 
@@ -800,11 +803,28 @@ class DownloadDialog(QDialog):
         for attr in ("_thread", "_worker"):
             setattr(self, attr, None)
 
+    # delete the current temp thumbnail file, if any
+    def _delete_current_thumb(self):
+        path = self._current_thumb_path
+        self._current_thumb_path = None
+        if path and os.path.exists(path):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
     # run when closes trimmer tool
     # maybe that could be at a trimmer file
     def done(self, result):
-        # terminate preview player in a non-bloking manner.
-        # loading threads end up alone on background, we don't use wait() at main thread.
+        """ Terminate preview player in a non-bloking manner.
+            loading threads end up alone on background, we don't use wait() at main thread.
+        """
         self._destroy_trimmer()
         self._current_request_id = None
+        """ Clean up the thumbnail only if the dialog is being cancelled/closed
+            without a confirmed download (result == Accepted keeps the file,
+            since DownloadItem.thumbnail still points to it for the history card)
+        """
+        if result != QDialog.Accepted:
+            self._delete_current_thumb()
         super().done(result)

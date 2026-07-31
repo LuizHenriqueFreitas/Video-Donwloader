@@ -159,6 +159,34 @@ def get_user_data_dir():
 
 
 """ ==========================
+    TEMP FILES (thumbnails, etc.)
+   ========================== """
+
+""" Return the directory for short-lived temp files (ex.: preview thumbnails).
+    Uses the same base as get_user_data_dir() so it's always an absolute path
+    next to the .exe / project root, instead of relative to whatever the
+    process' current working directory happens to be.
+"""
+def get_temp_dir():
+    temp_dir = os.path.join(get_user_data_dir(), "temp")
+    os.makedirs(temp_dir, exist_ok=True)
+    return temp_dir
+
+""" Wipe every file inside the temp dir. Safe to call on app startup as a
+    safety net for thumbnails that were never cleaned up (crash, force-quit,
+    dialog closed in an unexpected way).
+"""
+def clear_temp_dir():
+    temp_dir = get_temp_dir()
+    for name in os.listdir(temp_dir):
+        path = os.path.join(temp_dir, name)
+        try:
+            if os.path.isfile(path):
+                os.remove(path)
+        except OSError:
+            pass
+
+""" ==========================
     INTERNAL RESOURCES (packed on .exe).
     embbed dependencies at runtime, 
     need to be founded during development.
@@ -207,17 +235,24 @@ def get_ffmpeg_path():
         # that need to be translated with location update
         raise Exception("FFmpeg não encontrado. Instale com: sudo apt install ffmpeg")
 
-#Logic explained above
+#Logic explained bellow
 def get_node_path():
     if sys.platform == "win32":
-        # Windows: look for diferent path types
+        # Windows: look for the embedded binary first (bundled with the .exe),
+        # then fall back to whatever "node" is available on the system PATH.
         node_paths = [
             resource_path("bin/node/node.exe"),
             resource_path("node.exe"),
-            "node.exe",
-            "node"
         ]
+        for path in node_paths:
+            if os.path.exists(path):
+                return path
+
+        node = shutil.which("node") or shutil.which("node.exe")
+        if node:
+            return node
     else:
+        # linux search for local node installed on the system
         node = shutil.which('node')
         if node:
             return node

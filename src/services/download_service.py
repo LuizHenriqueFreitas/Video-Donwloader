@@ -111,7 +111,7 @@ class DownloadService:
         self.workers[item.id] = worker
 
         # start tharead
-        thread.started.connect(worker.run)
+        thread.started.connect(worker.run_download)
 
         # conncet worker progress signal to on_progress local var
         worker.progress.connect(on_progress)

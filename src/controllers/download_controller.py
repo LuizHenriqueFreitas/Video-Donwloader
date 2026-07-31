@@ -58,7 +58,12 @@ class DownloadController:
         if len(self.items) != before:
             self._save()
 
+    # remove all items from download list UI
+    def clear_history(self):
+        self.items = []
+        self._save()
 
+        
     """ =================
         UTIL FUNCTIONS
       ================ """
