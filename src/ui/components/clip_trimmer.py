@@ -18,7 +18,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
-from src.ui.components.range_slider import RangeSlider
+from ui.components.range_slider import RangeSlider
 
 # numerical time operations to friendly visual feedback
 def format_time(seconds):

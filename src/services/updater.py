@@ -144,15 +144,27 @@ def check_and_update_ytdlp():
 # that is just a getter, this function get the actual version of ytdlp - probably used on UI
 def get_installed_version_ytdlp():
     try:
+        ytdlp_path = get_ytdlp_path()
+
+        import os
+        if os.path.isabs(ytdlp_path) and not os.path.exists(ytdlp_path):
+                return "Not Found"
+        
         result = subprocess.run(
-            [get_ytdlp_path(), "--version"],
+            [ytdlp_path, "--version"],
             capture_output=True,
-            text=True
+            text=True,
+            timeout = 10
         )
 
         if result.returncode == 0:
             return result.stdout.strip()
+        else:
+            return f"Erro: {result.stderr.strip()}"
 
-        return "Erro"
-    except:
-        return "N/A"
+    except FileNotFoundError as e:
+        return f"yt-dlp não encontrado: {e}"
+    except subprocess.TimeoutExpired:
+        return "Timeout"
+    except Exception as e:
+        return f"Erro inesperado: {str(e)}"

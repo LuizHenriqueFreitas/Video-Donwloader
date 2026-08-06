@@ -214,7 +214,21 @@ def resource_path(relative_path):
 #Logic explained above
 def get_ytdlp_path():
     if sys.platform == "win32":
-        return resource_path("bin/yt-dlp.exe")
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        bin_path = os.path.join(current_dir, "..", "bin", "yt-dlp.exe")
+        bin_path = os.path.normpath(bin_path)
+
+        if(os.path.exists(bin_path)):
+            return bin_path
+
+        yt_dlp = shutil.which('yt-dlp.exe')
+        if yt_dlp:
+            return yt_dlp
+        raise Exception(
+            f"yt-dlp não encontrado em: {bin_path}\n"
+            f"Verifique se o arquivo está em: src/bin/yt-dlp.exe"
+        )
     else:
         yt_dlp = shutil.which('yt-dlp')
         if yt_dlp:

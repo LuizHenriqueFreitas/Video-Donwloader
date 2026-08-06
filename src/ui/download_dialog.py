@@ -594,7 +594,7 @@ class DownloadDialog(QDialog):
         self._destroy_trimmer()
 
         # late import to isolate dependencies from QtMultimedia
-        from src.ui.components.clip_trimmer import ClipTrimmer
+        from ui.components.clip_trimmer import ClipTrimmer
 
         # that will need to be translated at location update
         duration = self.video_info.get("duration")
