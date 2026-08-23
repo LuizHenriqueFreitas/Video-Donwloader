@@ -537,3 +537,149 @@ document.addEventListener('keydown', function(e) {
         closeVideo();
     }
 });
+
+
+
+
+
+
+
+
+
+// ============================================
+// CARROSSEL DE SCREENSHOTS
+// ============================================
+
+class ScreenshotCarousel {
+    constructor() {
+        this.track = document.getElementById('carouselTrack');
+        this.prevBtn = document.getElementById('carouselPrev');
+        this.nextBtn = document.getElementById('carouselNext');
+        this.indicators = document.getElementById('carouselIndicators');
+        this.slides = this.track.querySelectorAll('.carousel-slide');
+        this.currentSlide = 0;
+        this.totalSlides = this.slides.length;
+        this.autoPlayInterval = null;
+        this.autoPlayDelay = 5000; // 5 segundos
+        this.isTransitioning = false;
+
+        this.init();
+    }
+
+    init() {
+        // Cria os indicadores (dots)
+        this.createIndicators();
+        
+        // Adiciona event listeners
+        this.prevBtn.addEventListener('click', () => this.prevSlide());
+        this.nextBtn.addEventListener('click', () => this.nextSlide());
+        
+        // Navegação por teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') this.prevSlide();
+            if (e.key === 'ArrowRight') this.nextSlide();
+        });
+        
+        // Pausa autoplay ao passar o mouse
+        this.track.addEventListener('mouseenter', () => this.pauseAutoPlay());
+        this.track.addEventListener('mouseleave', () => this.startAutoPlay());
+        
+        // Touch events para mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        this.track.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        this.track.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            this.handleSwipe(touchStartX, touchEndX);
+        }, { passive: true });
+        
+        // Inicia o autoplay
+        this.startAutoPlay();
+        
+        // Atualiza a primeira posição
+        this.updateCarousel();
+    }
+
+    createIndicators() {
+        for (let i = 0; i < this.totalSlides; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'carousel-dot';
+            dot.setAttribute('aria-label', `Ir para slide ${i + 1}`);
+            dot.dataset.index = i;
+            dot.addEventListener('click', () => this.goToSlide(i));
+            this.indicators.appendChild(dot);
+        }
+    }
+
+    updateCarousel() {
+        // Atualiza a posição do track
+        this.track.style.transform = `translateX(-${this.currentSlide * 100}%)`;
+        
+        // Atualiza os dots
+        const dots = this.indicators.querySelectorAll('.carousel-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === this.currentSlide);
+        });
+    }
+
+    goToSlide(index) {
+        if (this.isTransitioning || index === this.currentSlide) return;
+        if (index < 0) index = this.totalSlides - 1;
+        if (index >= this.totalSlides) index = 0;
+        
+        this.isTransitioning = true;
+        this.currentSlide = index;
+        this.updateCarousel();
+        
+        setTimeout(() => {
+            this.isTransitioning = false;
+        }, 500);
+    }
+
+    nextSlide() {
+        this.goToSlide(this.currentSlide + 1);
+    }
+
+    prevSlide() {
+        this.goToSlide(this.currentSlide - 1);
+    }
+
+    handleSwipe(startX, endX) {
+        const threshold = 50; // Distância mínima para considerar um swipe
+        const diff = startX - endX;
+        
+        if (Math.abs(diff) > threshold) {
+            if (diff > 0) {
+                this.nextSlide();
+            } else {
+                this.prevSlide();
+            }
+        }
+    }
+
+    startAutoPlay() {
+        if (this.autoPlayInterval) return;
+        this.autoPlayInterval = setInterval(() => {
+            this.nextSlide();
+        }, this.autoPlayDelay);
+    }
+
+    pauseAutoPlay() {
+        if (this.autoPlayInterval) {
+            clearInterval(this.autoPlayInterval);
+            this.autoPlayInterval = null;
+        }
+    }
+}
+
+// Inicializa o carrossel quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', () => {
+    // Verifica se o carrossel existe na página
+    if (document.getElementById('carouselTrack')) {
+        new ScreenshotCarousel();
+    }
+});

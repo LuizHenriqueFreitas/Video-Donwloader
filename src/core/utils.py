@@ -12,6 +12,7 @@ import os
 import re
 import stat
 import shutil
+import subprocess
 
 """==========================
    Plataform filters
@@ -143,16 +144,19 @@ def resolve_unique_title(folder: str, title: str, format_type: str) -> str:
    ========================== """
 
 """ Return the directory where stay the user data (cookies, history, etc.)
-    At development: .src/data/
+    At development: src/data/
     At executable: acessible on folder 'data', near the .exe
 """
-# maybe that needs to be checked about data/ instance path
 def get_user_data_dir():
     if getattr(sys, 'frozen', False):
         # Executable: uses .exe owne directory
         base = os.path.dirname(sys.executable)
     else:
-        base = os.path.abspath(".")
+        # Dev mode: anchor to the "src" folder itself (same base used by
+        # resource_path() and get_ytdlp_path()) instead of the process' cwd -
+        # otherwise cookies.txt/settings.json/history.json silently end up in
+        # a different "data" folder depending on where the app was launched from.
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     data_dir = os.path.join(base, "data")
     os.makedirs(data_dir, exist_ok=True)
     return data_dir
@@ -171,6 +175,16 @@ def get_temp_dir():
     temp_dir = os.path.join(get_user_data_dir(), "temp")
     os.makedirs(temp_dir, exist_ok=True)
     return temp_dir
+
+""" Return the directory for thumbnails that must survive across app restarts
+    (ex.: history cards). Separate from get_temp_dir() on purpose: that one is
+    wiped on every startup by clear_temp_dir(), which would otherwise delete
+    history thumbnails still referenced by history.json.
+"""
+def get_thumbnails_dir():
+    thumbs_dir = os.path.join(get_user_data_dir(), "thumbnails")
+    os.makedirs(thumbs_dir, exist_ok=True)
+    return thumbs_dir
 
 """ Wipe every file inside the temp dir. Safe to call on app startup as a
     safety net for thumbnails that were never cleaned up (crash, force-quit,
@@ -197,10 +211,14 @@ def clear_temp_dir():
 """
 # generic finder path function - will be used by other metods below.
 def resource_path(relative_path):
-    
+
     if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
+    # Dev mode: anchor to the "src" folder itself instead of the process' cwd,
+    # matching where bundled resources (bin/, tools/, assets/) actually live
+    # regardless of where the app was launched from.
+    src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(src_dir, relative_path)
 
 """ Check bay resource_path() function if running on Windows,
     is the user is on Linux, exemple, he need to has localy installed
@@ -211,6 +229,23 @@ def resource_path(relative_path):
         get_node_path();
 """
 
+# runs "<path> --version" to confirm the bundled binary actually executes on
+# this OS/arch before trusting it. Without this, a bin/yt-dlp(.exe) that is
+# the wrong platform's binary (ex.: a Windows .exe copied into bin/yt-dlp on
+# Linux) gets returned as-is, and every caller crashes with an uncaught
+# OSError("Exec format error") instead of falling back to the system yt-dlp.
+def _ytdlp_binary_runs(path):
+    try:
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        result = subprocess.run(
+            [path, "--version"],
+            capture_output=True, text=True, timeout=5,
+            creationflags=creationflags,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
 #Logic explained above
 def get_ytdlp_path():
     if sys.platform == "win32":
@@ -219,7 +254,7 @@ def get_ytdlp_path():
         bin_path = os.path.join(current_dir, "..", "bin", "yt-dlp.exe")
         bin_path = os.path.normpath(bin_path)
 
-        if(os.path.exists(bin_path)):
+        if os.path.exists(bin_path) and _ytdlp_binary_runs(bin_path):
             return bin_path
 
         yt_dlp = shutil.which('yt-dlp.exe')
@@ -230,6 +265,13 @@ def get_ytdlp_path():
             f"Verifique se o arquivo está em: src/bin/yt-dlp.exe"
         )
     else:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        bin_path = os.path.join(current_dir, "..", "bin", "yt-dlp")
+        bin_path = os.path.normpath(bin_path)
+
+        if os.path.exists(bin_path) and os.access(bin_path, os.X_OK) and _ytdlp_binary_runs(bin_path):
+            return bin_path
+
         yt_dlp = shutil.which('yt-dlp')
         if yt_dlp:
             return yt_dlp
@@ -249,8 +291,31 @@ def get_ffmpeg_path():
         # that need to be translated with location update
         raise Exception("FFmpeg não encontrado. Instale com: sudo apt install ffmpeg")
 
-#Logic explained bellow
+# yt-dlp's JS challenge solver (used to resolve youtube signature/n-challenge)
+# refuses to run below this version, older node just silently fails to solve
+# the challenge and youtube ends up returning HTTP 403 on the video formats.
+NODE_MIN_MAJOR_VERSION = 22
+
+# runs "node --version" and checks against NODE_MIN_MAJOR_VERSION
+# returns True if the version could not be determined, so we don't block
+# on a candidate just because parsing failed
+def _node_version_supported(node_path):
+    try:
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        result = subprocess.run(
+            [node_path, "--version"],
+            capture_output=True, text=True, timeout=5,
+            creationflags=creationflags,
+        )
+        major = int(result.stdout.strip().lstrip("v").split(".")[0])
+        return major >= NODE_MIN_MAJOR_VERSION
+    except Exception:
+        return True
+
+#Logic explained above
 def get_node_path():
+    outdated_path = None
+
     if sys.platform == "win32":
         # Windows: look for the embedded binary first (bundled with the .exe),
         # then fall back to whatever "node" is available on the system PATH.
@@ -260,16 +325,31 @@ def get_node_path():
         ]
         for path in node_paths:
             if os.path.exists(path):
-                return path
+                if _node_version_supported(path):
+                    return path
+                outdated_path = path
 
         node = shutil.which("node") or shutil.which("node.exe")
         if node:
-            return node
+            if _node_version_supported(node):
+                return node
+            outdated_path = node
     else:
         # linux search for local node installed on the system
         node = shutil.which('node')
         if node:
-            return node
+            if _node_version_supported(node):
+                return node
+            outdated_path = node
+
+    if outdated_path:
+        # that need to be translated with location update
+        raise Exception(
+            f"Node.js encontrado em '{outdated_path}' está desatualizado "
+            f"(precisa ser versão {NODE_MIN_MAJOR_VERSION} ou superior).\n"
+            "Linux: use nvm (https://github.com/nvm-sh/nvm) para instalar uma versão recente\n"
+            "Windows: baixe em https://nodejs.org/"
+        )
 
     # that need to be translated with location update
     raise Exception(

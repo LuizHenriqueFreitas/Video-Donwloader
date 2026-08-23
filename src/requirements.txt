@@ -102,4 +102,4 @@ wxPython==4.2.1
 xdg==5
 xkit==0.0.0
 xlrd==2.0.1
-yt-dlp==2024.4.9
+yt-dlp==2026.8.19

@@ -24,6 +24,8 @@
     - playlist confirm download;
 """
 
+import os
+from uuid import uuid4
 import requests
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
@@ -32,9 +34,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QThread, QObject, Signal, QSize
 from PySide6.QtGui import QPixmap
 
-from src.models.download_item import DownloadItem
-from src.core.utils import resolve_unique_title
-from src.storage.settings_store import SettingsStore
+from models.download_item import DownloadItem
+from core.utils import resolve_unique_title, get_thumbnails_dir
+from storage.settings_store import SettingsStore
 
 
 # calculate video duration to show in UI
@@ -56,7 +58,10 @@ def _fmt_duration(seconds):
 ================================= """
 # load the thumbnaol at a separete thread
 class ThumbnailLoader(QObject):
-    loaded = Signal(int, QPixmap)
+    # index, preview icon, local file path (saved to disk so it survives into
+    # the download history — entry["thumbnail"] is just a remote URL and
+    # DownloadCard can only render a local file)
+    loaded = Signal(int, QPixmap, str)
     finished = Signal()
 
     def __init__(self, entries):
@@ -72,8 +77,16 @@ class ThumbnailLoader(QObject):
                     if r.status_code == 200:
                         pixmap = QPixmap()
                         pixmap.loadFromData(r.content)
-                        scaled = pixmap.scaled(80, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                        self.loaded.emit(idx, scaled)
+                        if not pixmap.isNull():
+                            video_id = entry.get("id") or str(uuid4())
+                            local_path = os.path.join(get_thumbnails_dir(), f"{video_id}.jpg")
+                            try:
+                                with open(local_path, "wb") as f:
+                                    f.write(r.content)
+                            except OSError:
+                                local_path = ""
+                            scaled = pixmap.scaled(80, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                            self.loaded.emit(idx, scaled, local_path)
                 except Exception:
                     pass
         self.finished.emit()
@@ -192,10 +205,12 @@ class PlaylistDialog(QDialog):
         self._thumb_thread.start()
 
     # add thumbnail to list when load finished
-    def _on_thumb_loaded(self, index, pixmap):
+    def _on_thumb_loaded(self, index, pixmap, local_path):
         if index < self.list_widget.count():
             item = self.list_widget.item(index)
             item.setIcon(pixmap)
+        if local_path:
+            self._thumbnails[index] = local_path
 
     # select all button - set all itens as checked
     def _set_all(self, checked):
@@ -251,13 +266,15 @@ class PlaylistDialog(QDialog):
 
         fmt = self.format_selector.currentText()
         selected = []
-        # add each selected video url to a list
+        # add each selected video url to a list (keep its list index, so we
+        # can later match it back to the thumbnail already downloaded by
+        # ThumbnailLoader for that same row)
         for i in range(self.list_widget.count()):
             it = self.list_widget.item(i)
             if it.checkState() == Qt.Checked:
                 entry = it.data(Qt.UserRole)
                 if entry.get("url"):
-                    selected.append(entry)
+                    selected.append((i, entry))
 
         # check if leastways one was selected
         if not selected:
@@ -268,10 +285,10 @@ class PlaylistDialog(QDialog):
         # show quality warning
         if not self._show_playlist_warning():
             return
-        
+
         used_titles = set()
         items = []
-        for entry in selected:
+        for index, entry in selected:
             # that will need to be translated at location update
             base_title = entry.get("title") or "video"
             title = resolve_unique_title(folder, base_title, fmt)
@@ -284,6 +301,8 @@ class PlaylistDialog(QDialog):
                 quality_id = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
 
             # add videos to be downloaded by items list
+            # thumbnail here must be a local file: DownloadCard reads it with
+            # os.path.exists()/QPixmap, entry["thumbnail"] is just a remote URL
             items.append(DownloadItem(
                 url=entry["url"],
                 title=title,
@@ -292,7 +311,7 @@ class PlaylistDialog(QDialog):
                 # that will need to be translated at location update
                 quality="Melhor qualidade (até 1080p)",
                 quality_id=quality_id,
-                thumbnail=entry.get("thumbnail"),
+                thumbnail=self._thumbnails.get(index),
                 status="pending",
                 output_path=folder,
             ))

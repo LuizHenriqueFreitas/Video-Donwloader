@@ -1315,3 +1315,223 @@ button:focus-visible,
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
+/* ============================================
+   SCREENSHOTS / CARROSSEL
+   ============================================ */
+
+.screenshots {
+    padding: 80px 0;
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.screenshots-subtitle {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+}
+
+.carousel-container {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-green);
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+    background: var(--bg-dark);
+    display: block;
+    padding: 20px;
+}
+
+.slide-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 30px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: var(--text-light);
+}
+
+.slide-caption h4 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: var(--green-light);
+}
+
+.slide-caption p {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin: 0;
+}
+
+/* Botões do Carrossel */
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(10, 15, 10, 0.8);
+    backdrop-filter: blur(5px);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 10;
+    font-size: 1.2rem;
+}
+
+.carousel-btn:hover {
+    background: var(--green-primary);
+    color: var(--bg-dark);
+    border-color: var(--green-primary);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 0 30px rgba(37, 255, 0, 0.2);
+}
+
+.carousel-btn-prev {
+    left: 20px;
+}
+
+.carousel-btn-next {
+    right: 20px;
+}
+
+/* Indicadores (dots) */
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+}
+
+.carousel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 0;
+}
+
+.carousel-dot:hover {
+    transform: scale(1.2);
+}
+
+.carousel-dot.active {
+    background: var(--green-primary);
+    border-color: var(--green-primary);
+    box-shadow: 0 0 20px rgba(37, 255, 0, 0.3);
+    transform: scale(1.2);
+}
+
+/* Responsividade do Carrossel */
+@media (max-width: 768px) {
+    .screenshots {
+        padding: 60px 0;
+    }
+
+    .screenshots-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .carousel-slide img {
+        max-height: 350px;
+        padding: 15px;
+    }
+
+    .slide-caption {
+        padding: 15px 20px;
+    }
+
+    .slide-caption h4 {
+        font-size: 0.95rem;
+    }
+
+    .slide-caption p {
+        font-size: 0.8rem;
+    }
+
+    .carousel-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .carousel-btn-prev {
+        left: 10px;
+    }
+
+    .carousel-btn-next {
+        right: 10px;
+    }
+
+    .carousel-dot {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .carousel-slide img {
+        max-height: 250px;
+        padding: 10px;
+    }
+
+    .slide-caption {
+        padding: 10px 15px;
+    }
+
+    .slide-caption h4 {
+        font-size: 0.85rem;
+    }
+
+    .slide-caption p {
+        font-size: 0.75rem;
+    }
+
+    .carousel-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8rem;
+    }
+
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+    }
+}

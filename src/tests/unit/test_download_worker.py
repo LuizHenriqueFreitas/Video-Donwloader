@@ -158,6 +158,17 @@ class TestBuildDownloadCommand:
         cmd = worker._build_download_command()
         assert "--extractor-args" not in cmd
 
+    def test_mp3_youtube_url_includes_client_settings(self, patched_utils):
+        # sem isso o yt-dlp recebe "HTTP Error 403: Forbidden" do youtube em downloads de audio
+        worker = make_worker(format_type="MP3", url="https://www.youtube.com/watch?v=abc")
+        cmd = worker._build_download_command()
+        assert "--extractor-args" in cmd
+
+    def test_mp3_non_youtube_excludes_client_settings(self, patched_utils):
+        worker = make_worker(format_type="MP3", url="https://vimeo.com/1")
+        cmd = worker._build_download_command()
+        assert "--extractor-args" not in cmd
+
     def test_output_template_uses_safe_title(self, patched_utils):
         worker = make_worker(title='vid:eo?"name', output_path="/tmp/out")
         cmd = worker._build_download_command()
@@ -290,6 +301,30 @@ class TestRunYtdlpProcess:
         # 50% nunca deve aparecer porque o merge já começou
         assert 50 not in progress
         assert progress == [10, 100]
+
+    def test_second_stream_resets_progress_instead_of_freezing(self, patched_utils, monkeypatch):
+        # download de MP4 padrão baixa video e audio como streams separados;
+        # a segunda stream reinicia em 0% e não pode ficar presa no valor
+        # máximo (99) atingido pela primeira - reproduz o bug da barra
+        # travando em 99% assim que o video termina e o audio começa
+        worker = make_worker()
+        progress = connect_capture(worker.progress)
+        lines = [
+            "[download] Destination: video.f137.mp4\n",
+            "[download]  50.0% of 5MiB\n",
+            "[download] 100.0% of 5MiB\n",
+            "[download] Destination: audio.f140.m4a\n",
+            "[download]  30.0% of 1MiB\n",
+            "[download] 100.0% of 1MiB\n",
+        ]
+        fake_proc = FakeProcess(stdout_lines=lines, returncode=0)
+        monkeypatch.setattr(dw.subprocess, "Popen", lambda *a, **k: fake_proc)
+
+        worker._run_ytdlp_process(["fake", "cmd"])
+        # a segunda stream deve emitir seu proprio 30% mesmo depois do
+        # primeiro stream ja ter chegado a 99
+        assert 30 in progress
+        assert progress == [50, 99, 30, 99, 100]
 
     def test_merging_formats_text_also_triggers_merge_state(self, patched_utils, monkeypatch):
         worker = make_worker()

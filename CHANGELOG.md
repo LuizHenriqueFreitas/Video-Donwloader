@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## 2026-23-08
+
+- Fix playlist download errors.
+- Fix dialog problens.
+- Fix advanced mode crash problems.
+
+---
+
+## 2026-28-07
+
+- New web site avaliable, full vibe coded just to provide a more simple space to user download the .exe - made with github API.
+
+Next steps:
+- fix tmp folder gaps.
+- change all folder path to relative.
+
+---
+
 ## 2026-27-07
 
 All files are beeing checked and documented in english.<br>

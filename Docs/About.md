@@ -26,6 +26,6 @@ DeepSeek and ClaudeCode, but...
 Until v2.0.0 the app was instable and week with a lot of small problems, it 
 works, but it was very makeshift and unreliable.
 
-So, next versions uses less AI assistence for 2 reasons?
+So, next versions uses less AI assistence for 2 reasons:
 1. I (the developer) want to learn and pratice more programing workflow.
 2. The idea is that make the Get Media Free more consistent and reliable.

@@ -51,6 +51,7 @@ class DownloadWorker(QObject):
         self.item = item
         self.process = None
         self._is_cancelled = False
+        self._last_stderr = ""
 
 
     """ ======================
@@ -94,7 +95,9 @@ class DownloadWorker(QObject):
                     if self.item.status == "cancelled":
                         return
                     # this will need to be translate on location update
-                    raise Exception("Falha no download (yt-dlp retornou erro)")
+                    detail = self._last_stderr.splitlines()[-1] if self._last_stderr else ""
+                    message = f"Falha no download (yt-dlp retornou erro): {detail}" if detail else "Falha no download (yt-dlp retornou erro)"
+                    raise Exception(message)
 
                 final_path = self._find_downloaded_file()
 
@@ -161,7 +164,9 @@ class DownloadWorker(QObject):
         if not success:
             self._cleanup_pattern(os.path.join(self.item.output_path, f"{tmp_title}*"))
             # this will need to be translate on location update
-            raise Exception("Falha no download do vídeo completo")
+            detail = self._last_stderr.splitlines()[-1] if self._last_stderr else ""
+            message = f"Falha no download do vídeo completo: {detail}" if detail else "Falha no download do vídeo completo"
+            raise Exception(message)
 
         # temporary full file verification
         full_files = glob.glob(os.path.join(self.item.output_path, f"{tmp_title}*"))
@@ -351,6 +356,11 @@ class DownloadWorker(QObject):
         if getattr(self.item, "overwrite", False) and not for_clip:
             command += ["--force-overwrites"]
 
+        # set yt-dlp youtube data client - needed for both MP3 and MP4,
+        # otherwise youtube returns "HTTP Error 403: Forbidden" on the default client
+        if is_youtube(self.item.url):
+            command += YOUTUBE_CLIENT_SETTINGS
+
         # MP3 download command line
         if self.item.format_type.upper() == "MP3":
             if for_clip:
@@ -375,10 +385,6 @@ class DownloadWorker(QObject):
             else:
                 # auto best quality
                 video_format = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best"
-
-            # set yt-dlp youtube data client
-            if is_youtube(self.item.url):
-                command += YOUTUBE_CLIENT_SETTINGS
 
             # ends yt-dlp command line
             command += [
@@ -412,15 +418,17 @@ class DownloadWorker(QObject):
         )
 
         # ytdlp execution function
+        stderr_lines = []
         def _drain_stderr():
             try:
-                for _ in self.process.stderr:
-                    pass
+                for line in self.process.stderr:
+                    stderr_lines.append(line)
             except Exception:
                 pass
 
         # start a separete thread, how it is daemon, if the function end the thread is turned off
-        threading.Thread(target=_drain_stderr, daemon=True).start()
+        stderr_thread = threading.Thread(target=_drain_stderr, daemon=True)
+        stderr_thread.start()
 
         # process management
         last_emitted = -1
@@ -440,6 +448,14 @@ class DownloadWorker(QObject):
             # recognizes whe entry to merging video and audio to same file
             if "Merging formats" in line or "[ffmpeg]" in line:
                 merge_started = True
+                continue
+
+            # a new "Destination:" line means yt-dlp started a new stream
+            # (ex.: video finished, now downloading audio) - percent restarts
+            # from 0%, so the high-water mark needs to reset too, otherwise
+            # the bar gets stuck at the previous stream's last percent
+            if "[download] Destination:" in line:
+                last_emitted = -1
                 continue
 
             # get the download '%' to be used on interface
@@ -470,6 +486,8 @@ class DownloadWorker(QObject):
 
         # finishing process
         self.process.wait()
+        stderr_thread.join(timeout=5)
+        self._last_stderr = "".join(stderr_lines).strip()
         # when merging is concluded emit 100%
         self.progress.emit(100)
         return self.process.returncode == 0

@@ -13,7 +13,7 @@ import os
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSlider
 )
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import Qt, QUrl, QTimer, QObject
 from PySide6.QtGui import QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
@@ -180,6 +180,9 @@ class ClipTrimmer(QWidget):
             self._player.durationChanged.connect(self._on_duration_changed)
             self._player.mediaStatusChanged.connect(self._on_media_status)
 
+            # DEBUG temporário: investigando 403 no preview direto do CDN
+            print(f"[ClipTrimmer.load_preview] url={url}")
+
             self._player.setSource(QUrl(url))
         except Exception as e:
             # that will need to be translated on location update
@@ -224,11 +227,15 @@ class ClipTrimmer(QWidget):
     # player generic error alert
     def _on_player_error(self, error, error_string=""):
         if error != QMediaPlayer.NoError:
+            # DEBUG temporário: investigando 403 no preview direto do CDN
+            print(f"[ClipTrimmer._on_player_error] error={error} error_string={error_string!r}")
             # that will need to be translated on location update
             self._enter_fallback("Não foi possível reproduzir o vídeo aqui.")
 
     # media preview error alert
     def _on_media_status(self, status):
+        # DEBUG temporário: investigando 403 no preview direto do CDN
+        print(f"[ClipTrimmer._on_media_status] status={status}")
         if status == QMediaPlayer.InvalidMedia:
             # that will need to be translated on location update
             self._enter_fallback("Formato de stream não suportado para preview.")
@@ -352,23 +359,54 @@ class ClipTrimmer(QWidget):
 
     def stop(self):
         """ Clean player ending. Is necessary release media with seSource(QUrl())
-            to the FFmpeg stop the network and decodification threads. 
+            to the FFmpeg stop the network and decodification threads.
             Or "Qthread: Destroyed while thread is still runnig" and probably
-            "Failed to send close message" errors will happend when destroy 
+            "Failed to send close message" errors will happend when destroy
             the player with a streaming connection open yet
+
+            player.stop()/setSource(QUrl()) can block for a few seconds on an
+            active network stream (Qt Multimedia FFmpeg backend on Linux), which
+            would freeze the whole dialog since this runs on the GUI thread when
+            the dialog is being closed. So the actual teardown is deferred to the
+            next event loop iteration, and the player/audio are detached from
+            this widget's parenting first so they survive this widget's deleteLater().
+
+            disconnect() is deferred too, and runs only after stop(): calling it
+            synchronously while media is actively playing can make the GUI thread
+            block/deadlock contending with the FFmpeg backend's decoder thread for
+            the signal-connection lock. Once stop() has halted playback there is
+            no more contention, so disconnect() becomes cheap and safe there.
+            Any signal that fires in the meantime is harmless: self._player is
+            already None below, and every slot guards on it before touching the
+            player.
         """
         p = self._player
         a = self._audio
         self._player = None
         self._audio = None
-        if p is not None:
+        if p is None:
+            return
+
+        try:
+            p.setParent(None)
+        except Exception:
+            pass
+        if a is not None:
             try:
-                # avoid callback while teardown runnig
-                p.disconnect()
+                a.setParent(None)
+            except Exception:
+                pass
+
+        def _teardown():
+            try:
+                p.stop()
             except Exception:
                 pass
             try:
-                p.stop()
+                # avoid callback while the rest of teardown runs.
+                # bare p.disconnect() raises TypeError on this PySide6 binding
+                # ("not enough arguments") - has to be called as QObject.disconnect(p)
+                QObject.disconnect(p)
             except Exception:
                 pass
             try:
@@ -380,9 +418,17 @@ class ClipTrimmer(QWidget):
                 p.setSource(QUrl())
             except Exception:
                 pass
-            p.deleteLater()
-        if a is not None:
-            a.deleteLater()
+            try:
+                p.deleteLater()
+            except Exception:
+                pass
+            if a is not None:
+                try:
+                    a.deleteLater()
+                except Exception:
+                    pass
+
+        QTimer.singleShot(0, _teardown)
 
     def closeEvent(self, event):
         self.stop()

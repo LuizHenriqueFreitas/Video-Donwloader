@@ -354,12 +354,18 @@ class DownloadDialog(QDialog):
         match = re.search(r'[&?]list=([a-zA-Z0-9_-]+)', url)
         return match.group(1) if match else None
 
+    # True if the url points to a specific video (has a video id), as opposed
+    # to a bare playlist link like ".../playlist?list=...".
+    def _has_video_id(self, url):
+        import re
+        return bool(re.search(r'[?&]v=', url))
+
     # build complete playlist url from ID
     def _build_playlist_url_from_id(self, playlist_id):
         return f"https://www.youtube.com/playlist?list={playlist_id}"
 
     # question to user if want to download all the playlist or just the link one
-    def _ask_single_or_playlist(self):
+    def _ask_single_or_playlist(self, url, playlist_url):
         msg = QMessageBox(self)
         # that will need to be translated at location update
         msg.setWindowTitle("Playlist detectada")
@@ -404,13 +410,20 @@ class DownloadDialog(QDialog):
             return
 
         # playlist url detection
+        """ is_youtube_playlist() also returns True for a video url that carries
+            a "list=" param (see TestIsYoutubePlaylist.test_playlist_query_param),
+            so it can't be used here to tell a bare playlist link apart from a
+            specific video that just happens to be inside a playlist. That
+            distinction is whether the url also carries a video id (v=).
+        """
         playlist_id = self._extract_playlist_id_from_video_url(url)
-        if playlist_id and not is_youtube_playlist(url):
+        if playlist_id and self._has_video_id(url):
             playlist_url = self._build_playlist_url_from_id(playlist_id)
             choice = self._ask_single_or_playlist(url, playlist_url)
-            
+
             if choice == "cancel":
                 # that will need to be translated at location update
+                self.url_input.clear()
                 self.status_label.setText("Cancelado pelo usuário")
                 return
             elif choice == "playlist":
@@ -567,7 +580,7 @@ class DownloadDialog(QDialog):
             f"✔ Playlist carregada: {len(playlist['entries'])} vídeos"
         )
 
-        from src.ui.playlist_dialog import PlaylistDialog
+        from ui.playlist_dialog import PlaylistDialog
         dlg = PlaylistDialog(playlist, self)
         if dlg.exec():
             self._results = dlg.get_result()
